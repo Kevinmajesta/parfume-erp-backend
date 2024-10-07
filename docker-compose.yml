@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  myapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - db
+    environment:
+      ENV: "dev"
+      PORT: "8080"
+      POSTGRES_HOST: "db"          # ganti localhost dengan db
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "kevinganteng"
+      POSTGRES_PASSWORD: "kevinganteng"
+      POSTGRES_DATABASE: "kevinganteng"
+      REDIS_HOST: "redis"          # ganti localhost dengan redis
+      REDIS_PORT: "6379"
+      JWT_SECRET_KEY: "erwhdhsajdahjkdhqwiuou"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=kevinganteng
+      - POSTGRES_PASSWORD=kevinganteng
+      - POSTGRES_DB=kevinganteng
+    ports:
+      - "5432:5432"
