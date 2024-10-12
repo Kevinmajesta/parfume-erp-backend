@@ -61,7 +61,6 @@ func (s *productService) CreateProduct(product *entity.Products) (*entity.Produc
 	if product.Image == "" {
 		return nil, errors.New("Image cannot be empty")
 	}
-	
 
 	// Mendapatkan produk terakhir untuk generate ProdukId baru
 	lastId, err := s.productRepository.GetLastProduct()
@@ -168,6 +167,8 @@ func (s *productService) GenerateProductPDF(id string) (string, error) {
 
 	pdf.Ln(12)
 	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(40, 10, "Product ID: "+product.ProdukId)
+	pdf.Ln(10)
 	pdf.Cell(40, 10, "Product Name: "+product.Productname)
 	pdf.Ln(10)
 	pdf.Cell(40, 10, "Category: "+product.Productcategory)
@@ -240,59 +241,60 @@ func (s *productService) GenerateBarcodePDF(id string) (string, error) {
 }
 
 func (s *productService) GenerateAllProductsPDF(page int) (string, error) {
-    products, err := s.FindAllProduct(page)
-    if err != nil {
-        return "", err
-    }
+	products, err := s.FindAllProduct(page)
+	if err != nil {
+		return "", err
+	}
 
-    pdf := gofpdf.New("P", "mm", "A4", "")
-    pdf.AddPage()
-    pdf.SetFont("Arial", "B", 16)
-    pdf.Cell(40, 10, "All Products List")
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 16)
+	pdf.Cell(40, 10, "All Products List")
 
-    pdf.Ln(12)
-    pdf.SetFont("Arial", "", 12)
+	pdf.Ln(12)
+	pdf.SetFont("Arial", "", 12)
 
-    for _, product := range products {
-        // Konversi SellPrice, MakePrice, dan Pajak dari string ke float64
-        sellPrice, err := strconv.ParseFloat(product.Sellprice, 64)
-        if err != nil {
-            return "", errors.New("invalid sell price for product: " + product.Productname)
-        }
+	for _, product := range products {
+		// Konversi SellPrice, MakePrice, dan Pajak dari string ke float64
+		sellPrice, err := strconv.ParseFloat(product.Sellprice, 64)
+		if err != nil {
+			return "", errors.New("invalid sell price for product: " + product.Productname)
+		}
 
-        makePrice, err := strconv.ParseFloat(product.Makeprice, 64)
-        if err != nil {
-            return "", errors.New("invalid make price for product: " + product.Productname)
-        }
+		makePrice, err := strconv.ParseFloat(product.Makeprice, 64)
+		if err != nil {
+			return "", errors.New("invalid make price for product: " + product.Productname)
+		}
 
-        pajak, err := strconv.ParseFloat(product.Pajak, 64)
-        if err != nil {
-            return "", errors.New("invalid tax for product: " + product.Productname)
-        }
+		pajak, err := strconv.ParseFloat(product.Pajak, 64)
+		if err != nil {
+			return "", errors.New("invalid tax for product: " + product.Productname)
+		}
 
-        // Menambahkan informasi produk ke PDF
-        pdf.Cell(40, 10, "Product Name: "+product.Productname)
-        pdf.Ln(10)
-        pdf.Cell(40, 10, "Category: "+product.Productcategory)
-        pdf.Ln(10)
-        pdf.Cell(40, 10, "Sell Price: "+fmt.Sprintf("%.2f", sellPrice))
-        pdf.Ln(10)
-        pdf.Cell(40, 10, "Make Price: "+fmt.Sprintf("%.2f", makePrice))
-        pdf.Ln(10)
-        pdf.Cell(40, 10, "Tax: "+fmt.Sprintf("%.2f", pajak))
-        pdf.Ln(10)
-        pdf.Cell(40, 10, "Description: "+product.Description)
-        pdf.Ln(10)
-        pdf.Cell(40, 10, "-------------------------------------")
-        pdf.Ln(10)
-    }
+		// Menambahkan informasi produk ke PDF
+		pdf.Cell(40, 10, "Product ID: "+product.ProdukId)
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "Product Name: "+product.Productname)
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "Category: "+product.Productcategory)
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "Sell Price: "+fmt.Sprintf("%.2f", sellPrice))
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "Make Price: "+fmt.Sprintf("%.2f", makePrice))
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "Tax: "+fmt.Sprintf("%.2f", pajak))
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "Description: "+product.Description)
+		pdf.Ln(10)
+		pdf.Cell(40, 10, "-------------------------------------")
+		pdf.Ln(10)
+	}
 
-    fileName := "all_products_page_" + fmt.Sprintf("%d", page) + ".pdf"
-    err = pdf.OutputFileAndClose(fileName)
-    if err != nil {
-        return "", err
-    }
+	fileName := "all_products_page_" + fmt.Sprintf("%d", page) + ".pdf"
+	err = pdf.OutputFileAndClose(fileName)
+	if err != nil {
+		return "", err
+	}
 
-    return fileName, nil
+	return fileName, nil
 }
-

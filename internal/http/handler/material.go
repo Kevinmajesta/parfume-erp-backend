@@ -193,3 +193,44 @@ func (h *MaterialHandler) SearchMaterials(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data Material", materials))
 }
+
+func (h *MaterialHandler) DownloadMaterialPDF(c echo.Context) error {
+	id := c.Param("id_material")
+
+	// Panggil service untuk generate PDF
+	fileName, err := h.materialService.GenerateMaterialPDF(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	// Kirim file PDF ke client untuk di-download
+	return c.File(fileName)
+}
+
+// GenerateBarcodePDFHandler untuk mengunduh PDF barcode
+func (h *MaterialHandler) GenerateBarcodePDFHandler(c echo.Context) error {
+	id := c.Param("id_material")
+
+	fileName, err := h.materialService.GenerateBarcode(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.File(fileName)
+}
+
+func (h *MaterialHandler) GenerateAllMaterialsPDFHandler(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	fileName, err := h.materialService.GenerateAllMaterialsPDF(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.File(fileName)
+}

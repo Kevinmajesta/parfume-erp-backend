@@ -196,5 +196,23 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: materialHandler.SearchMaterials,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/material/:id_material/pdf",
+			Handler: materialHandler.DownloadMaterialPDF,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/material/pdf",
+			Handler: materialHandler.GenerateAllMaterialsPDFHandler,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/material/:id_material/barcode",
+			Handler: materialHandler.GenerateBarcodePDFHandler,
+			Roles:   allRoles,
+		},
 	}
 }
