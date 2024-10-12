@@ -193,3 +193,44 @@ func (h *ProductHandler) SearchProducts(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data product", products))
 }
+
+func (h *ProductHandler) DownloadProductPDF(c echo.Context) error {
+	id := c.Param("id_product")
+
+	// Panggil service untuk generate PDF
+	fileName, err := h.productService.GenerateProductPDF(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	// Kirim file PDF ke client untuk di-download
+	return c.File(fileName)
+}
+
+// GenerateBarcodePDFHandler untuk mengunduh PDF barcode
+func (h *ProductHandler) GenerateBarcodePDFHandler(c echo.Context) error {
+	id := c.Param("id_product")
+
+	fileName, err := h.productService.GenerateBarcode(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.File(fileName)
+}
+
+func (h *ProductHandler) GenerateAllProductsPDFHandler(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	fileName, err := h.productService.GenerateAllProductsPDF(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.File(fileName)
+}

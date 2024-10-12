@@ -122,7 +122,7 @@ func (r *productRepository) DeleteProduct(product *entity.Products) (bool, error
 func (r *productRepository) FindAllProduct(page int) ([]entity.Products, error) {
 	var products []entity.Products
 	key := fmt.Sprintf("FindAllProducts_page_%d", page)
-	const pageSize = 2
+	const pageSize = 5
 
 	data, _ := r.cacheable.Get(key)
 	if data == "" {
@@ -153,3 +153,4 @@ func (r *productRepository) SearchByName(name string) ([]entity.Products, error)
 	}
 	return products, nil
 }
+
