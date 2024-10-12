@@ -44,7 +44,7 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 }
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
-	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler) []*route.Route {
+	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -136,12 +136,6 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Roles:   onlyAdmin,
 		},
 		{
-			Method:  http.MethodDelete,
-			Path:    "/products/:id_product",
-			Handler: productHandler.DeleteProduct,
-			Roles:   onlyAdmin,
-		},
-		{
 			Method:  http.MethodGet,
 			Path:    "/product/all",
 			Handler: productHandler.FindAllProduct,
@@ -151,6 +145,37 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodGet,
 			Path:    "/product",
 			Handler: productHandler.SearchProducts,
+			Roles:   allRoles,
+		},
+		//material
+		{
+			Method:  http.MethodPost,
+			Path:    "/materials",
+			Handler: materialHandler.CreateMaterial,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/materials/:id_material",
+			Handler: materialHandler.UpdateMaterial,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/materials/:id_material",
+			Handler: materialHandler.DeleteMaterial,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/material/all",
+			Handler: materialHandler.FindAllMaterial,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/material",
+			Handler: materialHandler.SearchMaterials,
 			Roles:   allRoles,
 		},
 	}

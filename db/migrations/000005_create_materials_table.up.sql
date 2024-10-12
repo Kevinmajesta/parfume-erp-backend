@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS rawmaterial (
+CREATE TABLE IF NOT EXISTS materials (
     id_material VARCHAR(255) PRIMARY KEY NOT NULL,
     materialname VARCHAR(255) NOT NULL,
     materialcategory VARCHAR(255) NOT NULL,
