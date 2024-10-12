@@ -6,18 +6,18 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8088:8088"
     depends_on:
       - redis
       - db
     environment:
       ENV: "dev"
-      PORT: "8080"
+      PORT: "8088"
       POSTGRES_HOST: "db"          # ganti localhost dengan db
       POSTGRES_PORT: "5432"
-      POSTGRES_USER: "kevinganteng"
-      POSTGRES_PASSWORD: "kevinganteng"
-      POSTGRES_DATABASE: "kevinganteng"
+      POSTGRES_USER: "parfume-erp"
+      POSTGRES_PASSWORD: "parfume-erp"
+      POSTGRES_DATABASE: "parfume-erp"
       REDIS_HOST: "redis"          # ganti localhost dengan redis
       REDIS_PORT: "6379"
       JWT_SECRET_KEY: "erwhdhsajdahjkdhqwiuou"
@@ -30,8 +30,8 @@ services:
   db:
     image: postgres:latest
     environment:
-      - POSTGRES_USER=kevinganteng
-      - POSTGRES_PASSWORD=kevinganteng
-      - POSTGRES_DB=kevinganteng
+      - POSTGRES_USER=parfume-erp
+      - POSTGRES_PASSWORD=parfume-erp
+      - POSTGRES_DB=parfume-erp
     ports:
       - "5432:5432"

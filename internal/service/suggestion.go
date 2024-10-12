@@ -1,9 +1,8 @@
 package service
 
 import (
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/internal/repository"
-	"github.com/Kevinmajesta/webPemancingan/pkg/token"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
 )
 
 type SuggestionService interface {
@@ -12,15 +11,13 @@ type SuggestionService interface {
 
 type suggestionService struct {
 	suggestionRepo repository.SuggestionRepository
-	tokenUseCase   token.TokenUseCase
 	userRepository repository.UserRepository
 }
 
-func NewSuggestionService(suggestionRepo repository.SuggestionRepository, tokenUseCase token.TokenUseCase,
+func NewSuggestionService(suggestionRepo repository.SuggestionRepository, 
 	userRepository repository.UserRepository) SuggestionService {
 	return &suggestionService{
 		suggestionRepo: suggestionRepo,
-		tokenUseCase:   tokenUseCase,
 		userRepository: userRepository,
 	}
 }

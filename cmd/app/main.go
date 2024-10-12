@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/Kevinmajesta/webPemancingan/configs"
-	"github.com/Kevinmajesta/webPemancingan/internal/builder"
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/pkg/cache"
-	"github.com/Kevinmajesta/webPemancingan/pkg/encrypt"
-	"github.com/Kevinmajesta/webPemancingan/pkg/postgres"
-	"github.com/Kevinmajesta/webPemancingan/pkg/server"
-	"github.com/Kevinmajesta/webPemancingan/pkg/token"
+	"github.com/Kevinmajesta/parfume-erp-backend/configs"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/builder"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/cache"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/encrypt"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/postgres"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/server"
 )
 
 func main() {
@@ -26,18 +25,15 @@ func main() {
 	// Initialize encryption tool
 	encryptTool := encrypt.NewEncryptTool(cfg.Encrypt.SecretKey, cfg.Encrypt.IV)
 
-	// Initialize JWT token use case
-	tokenUseCase := token.NewTokenUseCase(cfg.JWT.SecretKey)
-
 	// Convert configs.Config to *entity.Config
 	entityCfg := convertToEntityConfig(cfg)
 
 	// Build public and private routes
-	publicRoutes := builder.BuildPublicRoutes(db, redisDB, entityCfg, tokenUseCase, encryptTool)
-	privateRoutes := builder.BuildPrivateRoutes(db, redisDB, encryptTool, tokenUseCase)
+	publicRoutes := builder.BuildPublicRoutes(db, redisDB, entityCfg , encryptTool)
+	privateRoutes := builder.BuildPrivateRoutes(db, redisDB, encryptTool)
 
 	// Initialize and run the server
-	srv := server.NewServer("app", publicRoutes, privateRoutes, cfg.JWT.SecretKey)
+	srv := server.NewServer("app", publicRoutes, privateRoutes)
 	srv.Run()
 }
 

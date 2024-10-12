@@ -3,7 +3,7 @@ package postgres
 import (
 	"fmt"
 
-	"github.com/Kevinmajesta/webPemancingan/configs"
+	"github.com/Kevinmajesta/parfume-erp-backend/configs"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

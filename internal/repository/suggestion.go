@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/pkg/cache"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/cache"
 	"gorm.io/gorm"
 )
 

@@ -5,8 +5,8 @@ import (
 
 	"errors"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/internal/repository"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
 	"github.com/google/uuid"
 )
 

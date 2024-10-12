@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/internal/http/binder"
-	"github.com/Kevinmajesta/webPemancingan/internal/service"
-	"github.com/Kevinmajesta/webPemancingan/pkg/response"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/http/binder"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/service"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/response"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )

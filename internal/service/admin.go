@@ -2,14 +2,11 @@ package service
 
 import (
 	"errors" // Import log package
-	"time"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/internal/repository"
-	"github.com/Kevinmajesta/webPemancingan/pkg/email"
-	"github.com/Kevinmajesta/webPemancingan/pkg/encrypt"
-	"github.com/Kevinmajesta/webPemancingan/pkg/token"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/email"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/encrypt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,16 +23,14 @@ type AdminService interface {
 
 type adminService struct {
 	adminRepository repository.AdminRepository
-	tokenUseCase    token.TokenUseCase
 	encryptTool     encrypt.EncryptTool
 	emailSender     *email.EmailSender
 }
 
-func NewAdminService(adminRepository repository.AdminRepository, tokenUseCase token.TokenUseCase,
+func NewAdminService(adminRepository repository.AdminRepository,
 	encryptTool encrypt.EncryptTool, emailSender *email.EmailSender) *adminService {
 	return &adminService{
 		adminRepository: adminRepository,
-		tokenUseCase:    tokenUseCase,
 		encryptTool:     encryptTool,
 		emailSender:     emailSender,
 	}
@@ -54,33 +49,9 @@ func (s *adminService) LoginAdmin(email string, password string) (string, error)
 		return "", errors.New("wrong input email/password")
 	}
 
-	expiredTime := time.Now().Local().Add(24 * time.Hour)
-
-	location, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		panic(err)
-	}
-
 	// Dekripsi nomor telepon jika perlu
 	admin.Phone, _ = s.encryptTool.Decrypt(admin.Phone)
-	expiredTimeInJakarta := expiredTime.In(location)
-	// Buat claims JWT
-	claims := token.JwtCustomClaims{
-		ID:    admin.UserId.String(),
-		Email: admin.Email,
-		Role:  "admin",
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    "Depublic",
-			ExpiresAt: jwt.NewNumericDate(expiredTimeInJakarta),
-		},
-	}
-
-	// Generate JWT token
-	jwtToken, err := s.tokenUseCase.GenerateAccessToken(claims)
-	if err != nil {
-		return "", errors.New("there is an error in the system")
-	}
-	return jwtToken, nil
+	return "Login successful", nil
 }
 
 func (s *adminService) FindAllUser(page int) ([]entity.User, error) {

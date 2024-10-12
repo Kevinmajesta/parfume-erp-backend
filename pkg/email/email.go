@@ -3,7 +3,7 @@ package email
 import (
 	"fmt"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 
 	"gopkg.in/gomail.v2"
 )

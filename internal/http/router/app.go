@@ -3,8 +3,8 @@ package router
 import (
 	"net/http"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/http/handler"
-	"github.com/Kevinmajesta/webPemancingan/pkg/route"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/http/handler"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/route"
 )
 
 const (
@@ -44,7 +44,7 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 }
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
-	schedulesHandler handler.SchedulesHandler) []*route.Route {
+	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -115,6 +115,43 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Path:    "/delete/schedule/:id_schedules",
 			Handler: schedulesHandler.DeleteSchedule,
 			Roles:   onlyAdmin,
+		},
+		//product
+		{
+			Method:  http.MethodPost,
+			Path:    "/products",
+			Handler: productHandler.CreateProduct,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/products/:id_product",
+			Handler: productHandler.UpdateProduct,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/products/:id_product",
+			Handler: productHandler.DeleteProduct,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/products/:id_product",
+			Handler: productHandler.DeleteProduct,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/product/all",
+			Handler: productHandler.FindAllProduct,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/product",
+			Handler: productHandler.SearchProducts,
+			Roles:   allRoles,
 		},
 	}
 }

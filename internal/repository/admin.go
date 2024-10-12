@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/pkg/cache"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/cache"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

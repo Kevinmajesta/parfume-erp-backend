@@ -6,12 +6,10 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/internal/repository"
-	"github.com/Kevinmajesta/webPemancingan/pkg/email"
-	"github.com/Kevinmajesta/webPemancingan/pkg/encrypt"
-	"github.com/Kevinmajesta/webPemancingan/pkg/token"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/email"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/encrypt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,18 +29,16 @@ type UserService interface {
 
 type userService struct {
 	userRepository repository.UserRepository
-	tokenUseCase   token.TokenUseCase
 	encryptTool    encrypt.EncryptTool
 	emailSender    *email.EmailSender
 }
 
 var InternalError = "internal server error"
 
-func NewUserService(userRepository repository.UserRepository, tokenUseCase token.TokenUseCase,
+func NewUserService(userRepository repository.UserRepository,
 	encryptTool encrypt.EncryptTool, emailSender *email.EmailSender) *userService {
 	return &userService{
 		userRepository: userRepository,
-		tokenUseCase:   tokenUseCase,
 		encryptTool:    encryptTool,
 		emailSender:    emailSender,
 	}
@@ -59,35 +55,10 @@ func (s *userService) LoginUser(email string, password string) (string, error) {
 		return "", errors.New("wrong input email/password")
 	}
 
-	// Lanjutkan dengan pembuatan token dan logika lainnya
-	expiredTime := time.Now().Local().Add(24 * time.Hour)
-
-	location, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		panic(err)
-	}
-
 	// Dekripsi nomor telepon jika perlu
 	user.Phone, _ = s.encryptTool.Decrypt(user.Phone)
-	expiredTimeInJakarta := expiredTime.In(location)
-	// Buat claims JWT
-	claims := token.JwtCustomClaims{
-		ID:    user.UserId.String(),
-		Email: user.Email,
-		Role:  "user",
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    "Depublic",
-			ExpiresAt: jwt.NewNumericDate(expiredTimeInJakarta),
-		},
-	}
 
-	// Generate JWT token
-	jwtToken, err := s.tokenUseCase.GenerateAccessToken(claims)
-	if err != nil {
-		return "", errors.New("there is an error in the system")
-	}
-
-	return jwtToken, nil
+	return " ", nil
 }
 
 func (s *userService) CreateUser(user *entity.User) (*entity.User, error) {

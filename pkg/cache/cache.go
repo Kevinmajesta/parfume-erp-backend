@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Kevinmajesta/webPemancingan/configs"
+	"github.com/Kevinmajesta/parfume-erp-backend/configs"
 	"github.com/redis/go-redis/v9"
 )
 

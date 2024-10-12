@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Kevinmajesta/webPemancingan/internal/entity"
-	"github.com/Kevinmajesta/webPemancingan/internal/service"
-	"github.com/Kevinmajesta/webPemancingan/pkg/response"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/internal/service"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/response"
 	"github.com/labstack/echo/v4"
 )
 
