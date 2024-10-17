@@ -11,7 +11,7 @@ import (
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
 	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
+	"github.com/boombuler/barcode/code93"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -192,8 +192,8 @@ func (s *materialService) GenerateBarcode(id string) (string, error) {
 		return "", err
 	}
 
-	qrCode, _ := qr.Encode(material.MaterialId, qr.M, qr.Auto)
-	qrCode, _ = barcode.Scale(qrCode, 200, 200) // Resize barcode
+	qrCode, _ := code93.Encode(material.MaterialId, true, true)
+	qrCode, _ = barcode.Scale(qrCode, 650, 250)
 
 	barcodeFile := "barcode_" + material.MaterialId + ".png"
 	file, _ := os.Create(barcodeFile)

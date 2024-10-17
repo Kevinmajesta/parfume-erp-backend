@@ -23,6 +23,8 @@ func NewServer(serverName string, publicRoutes, privateRoutes []*route.Route) *S
 	e := echo.New()
 	e.Use(middleware.CORS())
 
+	e.Static("/assets", "assets")
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://127.0.0.1:8000/"},
 		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},

@@ -11,7 +11,7 @@ import (
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
 	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
+	"github.com/boombuler/barcode/code93"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -197,8 +197,8 @@ func (s *productService) GenerateBarcode(id string) (string, error) {
 		return "", err
 	}
 
-	qrCode, _ := qr.Encode(product.ProdukId, qr.M, qr.Auto)
-	qrCode, _ = barcode.Scale(qrCode, 200, 200) // Resize barcode
+	qrCode, _ := code93.Encode(product.ProdukId, true, true)
+	qrCode, _ = barcode.Scale(qrCode, 650, 250)
 
 	barcodeFile := "barcode_" + product.ProdukId + ".png"
 	file, _ := os.Create(barcodeFile)
@@ -209,26 +209,23 @@ func (s *productService) GenerateBarcode(id string) (string, error) {
 	return barcodeFile, nil
 }
 
-// GenerateBarcodePDF untuk memasukkan barcode ke dalam PDF
 func (s *productService) GenerateBarcodePDF(id string) (string, error) {
 	product, err := s.productRepository.FindProductByID(id)
 	if err != nil {
 		return "", err
 	}
 
-	// Buat barcode terlebih dahulu
 	barcodeFile, err := s.GenerateBarcode(id)
 	if err != nil {
 		return "", err
 	}
 
-	// Membuat PDF untuk barcode
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 16)
 	pdf.Cell(40, 10, "Product Barcode")
 
-	pdf.Ln(12)
+	pdf.Ln(30)
 	pdf.Image(barcodeFile, 10, 20, 40, 40, false, "", 0, "")
 
 	barcodePDF := "barcode_" + product.ProdukId + ".pdf"

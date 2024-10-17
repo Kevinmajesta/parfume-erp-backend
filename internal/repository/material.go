@@ -122,7 +122,7 @@ func (r *materialRepository) DeleteMaterial(material *entity.Materials) (bool, e
 func (r *materialRepository) FindAllMaterial(page int) ([]entity.Materials, error) {
 	var Materials []entity.Materials
 	key := fmt.Sprintf("FindAllMaterials_page_%d", page)
-	const pageSize = 5
+	const pageSize = 100
 
 	data, _ := r.cacheable.Get(key)
 	if data == "" {
