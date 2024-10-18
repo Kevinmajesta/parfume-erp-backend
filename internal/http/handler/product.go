@@ -72,6 +72,7 @@ func (h *ProductHandler) CreateProduct(c echo.Context) error {
 		Makeprice:       input.MakePrice,
 		Pajak:           input.Pajak,
 		Description:     input.Description,
+		Variant:         input.Variant,
 		Image:           "/assets/images/" + imageFilename,
 	}
 
@@ -138,7 +139,7 @@ func (h *ProductHandler) UpdateProduct(c echo.Context) error {
 		imageURL = ""
 	}
 
-	inputUser := entity.UpdateProduct(input.ProdukId, input.ProductName, input.ProductCategory, input.SellPrice, input.MakePrice, input.Pajak, input.Description, imageURL)
+	inputUser := entity.UpdateProduct(input.ProdukId, input.ProductName, input.ProductCategory, input.SellPrice, input.MakePrice, input.Pajak, input.Description, imageURL, input.Variant)
 
 	updatedProduk, err := h.productService.UpdateProduct(inputUser)
 	if err != nil {

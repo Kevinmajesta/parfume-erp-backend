@@ -12,6 +12,7 @@ type ProductCreateRequest struct {
 	Pajak           string                `form:"pajak" validate:"required"`
 	Image           *multipart.FileHeader `form:"image" validate:"required"`
 	Description     string                `form:"description" validate:"required"`
+	Variant         string                `form:"variant" validate:"required,oneof=yes no"`
 }
 
 type ProductUpdateRequest struct {
@@ -23,6 +24,7 @@ type ProductUpdateRequest struct {
 	Pajak           string                `form:"pajak" validate:"required"`
 	Image           *multipart.FileHeader `form:"image" validate:"required"`
 	Description     string                `form:"description" validate:"required"`
+	Variant         string                `form:"variant" validate:"required,oneof=yes no"`
 }
 
 type ProdukDeleteRequest struct {

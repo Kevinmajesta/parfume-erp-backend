@@ -62,6 +62,10 @@ func (s *productService) CreateProduct(product *entity.Products) (*entity.Produc
 		return nil, errors.New("Image cannot be empty")
 	}
 
+	if product.Variant != "yes" && product.Variant != "no" {
+		return nil, errors.New("Variant must be either 'yes' or 'no'")
+	}
+
 	// Mendapatkan produk terakhir untuk generate ProdukId baru
 	lastId, err := s.productRepository.GetLastProduct()
 	if err != nil {
@@ -69,7 +73,7 @@ func (s *productService) CreateProduct(product *entity.Products) (*entity.Produc
 	}
 
 	// Buat produk baru dengan ID yang di-generate
-	newProduct := entity.NewProduct(lastId, product.Productname, product.Productcategory, product.Sellprice, product.Makeprice, product.Pajak, product.Description, product.Image)
+	newProduct := entity.NewProduct(lastId, product.Productname, product.Productcategory, product.Sellprice, product.Makeprice, product.Pajak, product.Description, product.Image, product.Variant)
 
 	// Simpan produk ke database
 	savedProduct, err := s.productRepository.CreateProduct(newProduct)
@@ -105,6 +109,10 @@ func (s *productService) UpdateProduct(product *entity.Products) (*entity.Produc
 	}
 	if product.Image == "" {
 		return nil, errors.New("Image cannot be empty")
+	}
+
+	if product.Variant != "yes" && product.Variant != "no" {
+		return nil, errors.New("Variant must be either 'yes' or 'no'")
 	}
 
 	updatedProduct, err := s.productRepository.UpdateProduct(product)

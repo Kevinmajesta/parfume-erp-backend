@@ -12,6 +12,7 @@ type Products struct {
 	Makeprice       string `form:"makeprice"`
 	Pajak           string `form:"pajak"`
 	Description     string `form:"description"`
+	Variant         string `form:"variant" gorm:"column:variant"` 
 	Image           string `form:"image"`
 	Auditable
 }
@@ -29,7 +30,7 @@ func generateProductId(lastId string) string {
 }
 
 func NewProduct(lastId, productname, productcategory,
-	sellprice, makeprice, pajak, description, image string) *Products {
+	sellprice, makeprice, pajak, description, image, variant string) *Products {
 	return &Products{
 		ProdukId:        generateProductId(lastId),
 		Productname:     productname,
@@ -39,12 +40,13 @@ func NewProduct(lastId, productname, productcategory,
 		Pajak:           pajak,
 		Description:     description,
 		Image:           image,
+		Variant:         variant,
 		Auditable:       NewAuditable(),
 	}
 }
 
 func UpdateProduct(id_product, productname, productcategory,
-	sellprice, makeprice, pajak, description, image string) *Products {
+	sellprice, makeprice, pajak, description, image, variant  string) *Products {
 	return &Products{
 		ProdukId:        id_product,
 		Productname:     productname,
@@ -54,6 +56,7 @@ func UpdateProduct(id_product, productname, productcategory,
 		Pajak:           pajak,
 		Description:     description,
 		Image:           image,
+		Variant:         variant,
 		Auditable:       UpdateAuditable(),
 	}
 }
