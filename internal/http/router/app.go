@@ -143,6 +143,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 		},
 		{
 			Method:  http.MethodGet,
+			Path:    "/product/variants/all",
+			Handler: productHandler.FindAllProductVariant,
+			Roles:   onlyAdmin,
+		},
+		{
+			Method:  http.MethodGet,
 			Path:    "/product",
 			Handler: productHandler.SearchProducts,
 			Roles:   allRoles,

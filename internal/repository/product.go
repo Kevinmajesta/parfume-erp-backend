@@ -21,6 +21,7 @@ type ProductRepository interface {
 	DeleteProduct(product *entity.Products) (bool, error)
 	FindAllProduct(page int) ([]entity.Products, error)
 	SearchByName(name string) ([]entity.Products, error)
+	FindAllProductVariant(page int) ([]entity.Products, error)
 }
 
 type productRepository struct {
@@ -122,6 +123,31 @@ func (r *productRepository) DeleteProduct(product *entity.Products) (bool, error
 func (r *productRepository) FindAllProduct(page int) ([]entity.Products, error) {
 	var products []entity.Products
 	key := fmt.Sprintf("FindAllProducts_page_%d", page)
+	const pageSize = 100
+
+	data, _ := r.cacheable.Get(key)
+	if data == "" {
+		offset := (page - 1) * pageSize
+		if err := r.db.Limit(pageSize).Offset(offset).Where("variant = ?", "no").Find(&products).Error; err != nil {
+			return products, err
+		}
+		marshalledproducts, _ := json.Marshal(products)
+		err := r.cacheable.Set(key, marshalledproducts, 5*time.Minute)
+		if err != nil {
+			return products, err
+		}
+	} else {
+		err := json.Unmarshal([]byte(data), &products)
+		if err != nil {
+			return products, err
+		}
+	}
+	return products, nil
+}
+
+func (r *productRepository) FindAllProductVariant(page int) ([]entity.Products, error) {
+	var products []entity.Products
+	key := fmt.Sprintf("FindAllProductsVariant_page_%d", page)
 	const pageSize = 100
 
 	data, _ := r.cacheable.Get(key)

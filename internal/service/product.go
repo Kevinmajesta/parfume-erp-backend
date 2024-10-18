@@ -27,6 +27,7 @@ type ProductService interface {
 	GenerateBarcodePDF(id string) (string, error)
 	GenerateBarcode(id string) (string, error)
 	GenerateAllProductsPDF(page int) (string, error)
+	FindAllProductVariant(page int) ([]entity.Products, error)
 }
 
 type productService struct {
@@ -139,6 +140,10 @@ func (s *productService) DeleteProduct(productId string) (bool, error) {
 
 func (s *productService) FindAllProduct(page int) ([]entity.Products, error) {
 	return s.productRepository.FindAllProduct(page)
+}
+
+func (s *productService) FindAllProductVariant(page int) ([]entity.Products, error) {
+	return s.productRepository.FindAllProductVariant(page)
 }
 
 func (s *productService) SearchProductsByName(name string) ([]entity.Products, error) {

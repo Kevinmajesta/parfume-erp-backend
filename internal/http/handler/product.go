@@ -178,6 +178,20 @@ func (h *ProductHandler) FindAllProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data products", products))
 }
 
+func (h *ProductHandler) FindAllProductVariant(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	products, err := h.productService.FindAllProductVariant(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data products", products))
+}
+
 func (h *ProductHandler) SearchProducts(c echo.Context) error {
 	name := c.QueryParam("productname")
 	products, err := h.productService.SearchProductsByName(name)
