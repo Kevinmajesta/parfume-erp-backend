@@ -44,7 +44,8 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 }
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
-	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler) []*route.Route {
+	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler,
+	bomHandler handler.BOMHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -204,6 +205,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 		},
 		{
 			Method:  http.MethodGet,
+			Path:    "/material/:id_material",
+			Handler: materialHandler.GetMaterialProfile,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
 			Path:    "/material/:id_material/pdf",
 			Handler: materialHandler.DownloadMaterialPDF,
 			Roles:   allRoles,
@@ -218,6 +225,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodGet,
 			Path:    "/material/:id_material/barcode",
 			Handler: materialHandler.GenerateBarcodePDFHandler,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/bom",
+			Handler: bomHandler.CreateBOM,
 			Roles:   allRoles,
 		},
 	}

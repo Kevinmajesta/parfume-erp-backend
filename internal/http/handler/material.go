@@ -234,3 +234,14 @@ func (h *MaterialHandler) GenerateAllMaterialsPDFHandler(c echo.Context) error {
 
 	return c.File(fileName)
 }
+
+func (h *MaterialHandler) GetMaterialProfile(c echo.Context) error {
+	material_ID := c.Param("id_material")
+
+	material, err := h.materialService.FindMaterialByID(material_ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to get material"))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays material data", material))
+}

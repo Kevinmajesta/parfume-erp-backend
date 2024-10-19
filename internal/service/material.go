@@ -27,6 +27,7 @@ type MaterialService interface {
 	GenerateBarcodePDF(id string) (string, error)
 	GenerateBarcode(id string) (string, error)
 	GenerateMaterialPDF(id string) (string, error)
+	GetMaterialByID(materialId string) (*entity.Materials, error)
 }
 
 type materialService struct {
@@ -287,4 +288,13 @@ func (s *materialService) GenerateAllMaterialsPDF(page int) (string, error) {
 	}
 
 	return fileName, nil
+}
+
+func (s *materialService) GetMaterialByID(materialId string) (*entity.Materials, error) {
+
+	material, err := s.materialRepository.FindMaterialByID(materialId)
+	if err != nil {
+		return nil, err
+	}
+	return material, nil
 }

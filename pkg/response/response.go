@@ -10,6 +10,11 @@ type Meta struct {
 	Message string `json:"message"`
 }
 
+type BOMResponse struct {
+	Meta       Meta        `json:"meta"`
+	DataBom    interface{} `json:"data_bom"`
+}
+
 func SuccessResponse(code int, message string, data interface{}) Response {
 	return Response{
 		Meta: Meta{
@@ -29,3 +34,23 @@ func ErrorResponse(code int, message string) Response {
 		Data: nil,
 	}
 }
+
+func SuccessResponseBom(code int, message string, data interface{}) BOMResponse {
+	return BOMResponse{
+		Meta: Meta{
+			Code:    code,
+			Message: message,
+		},
+		DataBom: data,
+	}
+}
+
+func ErrorResponseBom(code int, message string) BOMResponse {
+	return BOMResponse{
+		Meta: Meta{
+			Code:    code,
+			Message: message,
+		},
+	}
+}
+
