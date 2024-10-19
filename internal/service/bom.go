@@ -16,6 +16,7 @@ type BOMService interface {
 	UpdateBOM(bom *entity.Bom) (*entity.Bom, error)
 	CheckDuplicateProductInBOM(productId string, bomId string) (bool, error)
 	CheckDuplicateMaterialInBOM(materialId string, bomId string) (bool, error)
+	GetBOMByID(bomId string) (*entity.Bom, error)
 }
 
 type bomService struct {
@@ -163,4 +164,9 @@ func (s *bomService) CheckDuplicateMaterialInBOM(materialId string, bomId string
 	}
 
 	return false, nil
+}
+
+// Service Layer
+func (s *bomService) GetBOMByID(bomId string) (*entity.Bom, error) {
+    return s.bomRepo.FindBOMByID(bomId)
 }

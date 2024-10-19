@@ -20,6 +20,7 @@ type BOMRepository interface {
 	DeleteBom(bomId string) (bool, error)
 	UpdateBOM(bom *entity.Bom) (*entity.Bom, error)
 	FindBOMByProductIDAndBOMID(productId string, bomId string) (*entity.Bom, error)
+	FindBOMByID(bomId string) (*entity.Bom, error)
 }
 
 type bomRepository struct {
@@ -118,3 +119,17 @@ func (r *bomRepository) FindBOMByProductIDAndBOMID(productId string, bomId strin
 	}
 	return &bom, nil // Jika ditemukan, artinya ada duplikasi
 }
+
+// Repository Layer
+func (r *bomRepository) FindBOMByID(bomId string) (*entity.Bom, error) {
+    var bom entity.Bom
+    if err := r.db.Preload("Materials").Where("id_bom = ?", bomId).First(&bom).Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, nil // Tidak ditemukan
+        }
+        return nil, err // Error lain saat pengambilan data
+    }
+    return &bom, nil // Jika ditemukan, kembalikan data BoM
+}
+
+

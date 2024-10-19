@@ -192,3 +192,24 @@ func (h *BOMHandler) UpdateBOM(c echo.Context) error {
     })
 }
 
+func (h *BOMHandler) GetBOMByID(c echo.Context) error {
+    bomId := c.Param("id_bom")
+
+    bom, err := h.bomService.GetBOMByID(bomId)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
+    }
+    if bom == nil {
+        return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("BOM with ID %s not found", bomId)))
+    }
+
+    return c.JSON(http.StatusOK, response.BOMResponse{
+        Meta: response.Meta{
+            Code:    200,
+            Message: "Successfully retrieved BoM",
+        },
+        DataBom: *bom,
+    })
+}
+
+

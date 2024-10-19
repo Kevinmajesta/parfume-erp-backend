@@ -5,13 +5,13 @@ import (
 )
 
 type Bom struct {
-	BomId             string        `json:"id_bom" gorm:"column:id_bom;primaryKey"`
-	ProductId         string        `json:"id_product" gorm:"column:id_product"`
-	ProductName       string        `json:"productname" gorm:"column:productname"`
-	ProductPreference string        `json:"productpreference" gorm:"column:productpreference"`
-	Quantity          string        `json:"quantity" gorm:"column:quantity"`
-	Materials         []BomMaterial `json:"materials" gorm:"-"`
-	Auditable
+    BomId             string        `json:"id_bom" gorm:"column:id_bom;primaryKey"`
+    ProductId         string        `json:"id_product" gorm:"column:id_product"`
+    ProductName       string        `json:"productname" gorm:"column:productname"`
+    ProductPreference string        `json:"productpreference" gorm:"column:productpreference"`
+    Quantity          string        `json:"quantity" gorm:"column:quantity"`
+    Materials         []BomMaterial `json:"materials" gorm:"foreignKey:BomId"` // Gunakan foreignKey
+    Auditable
 }
 
 type BomMaterial struct {
