@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
@@ -15,6 +16,7 @@ type BOMRepository interface {
 	GetLastBomId() (string, error)
 	CheckProductExists(productId string) (bool, error)
 	FindAllBom(page int) ([]entity.Bom, error)
+	DeleteBom(bomId string) (bool, error)
 }
 
 type bomRepository struct {
@@ -75,3 +77,27 @@ func (r *bomRepository) FindAllBom(page int) ([]entity.Bom, error) {
 	}
 	return Bom, nil
 }
+
+func (r *bomRepository) DeleteBom(bomId string) (bool, error) {
+
+	if err := r.db.Unscoped().Where("id_bom = ?", bomId).Delete(&entity.BomMaterial{}).Error; err != nil {
+		log.Printf("Error deleting materials for bom ID %s: %v", bomId, err)
+		return false, err
+	}
+
+
+	if err := r.db.Unscoped().Where("id_bom = ?", bomId).Delete(&entity.Bom{}).Error; err != nil {
+		log.Printf("Error deleting bom with ID %s: %v", bomId, err)
+		return false, err
+	}
+
+	log.Printf("Successfully deleted bom with ID %s and its related materials", bomId)
+	r.cacheable.Delete("FindAllBoms_page_1")
+	return true, nil
+}
+
+
+
+
+
+

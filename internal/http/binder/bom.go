@@ -17,4 +17,7 @@ type MaterialRequest struct {
 	Unit         string `json:"unit"`
 }
 
+type BomDeleteRequest struct {
+	BomId string `param:"id_bom" validate:"required"`
+}
 

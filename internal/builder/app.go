@@ -57,7 +57,7 @@ func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.
 	materialService := service.NewMaterialService(materialRepository)
 	materialHandler := handler.NewMaterialHandler(materialService)
 
-	bomRepository := repository.NewBOMRepository(db, cacheable)
+	bomRepository := repository.NewBOMRepository(db, cacheable, )
 	bomMaterialRepo := repository.NewBOMMaterialRepository(db)
 	bomService := service.NewBOMService(bomRepository, bomMaterialRepo)
 	bomHandler := handler.NewBOMHandler(bomService)

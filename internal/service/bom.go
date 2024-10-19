@@ -12,6 +12,7 @@ type BOMService interface {
 	GetCheckIDProduct(productId string) (bool, error)
 	GetCheckIDMaterial(materialId string) (bool, error)
 	FindAllBom(page int) ([]entity.Bom, error)
+	DeleteBom(bomId string) (bool, error)
 }
 
 type bomService struct {
@@ -89,3 +90,8 @@ func (s *bomService) GetCheckIDMaterial(materialId string) (bool, error) {
 func (s *bomService) FindAllBom(page int) ([]entity.Bom, error) {
 	return s.bomRepo.FindAllBom(page)
 }
+
+func (s *bomService) DeleteBom(bomId string) (bool, error) {
+	return s.bomRepo.DeleteBom(bomId)
+}
+

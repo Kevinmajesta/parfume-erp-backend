@@ -104,3 +104,18 @@ func (h *BOMHandler) FindAllBom(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data materials", boms))
 }
+
+func (h *BOMHandler) DeleteBom(c echo.Context) error {
+	var input binder.BomDeleteRequest
+
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "ada kesalahan input"))
+	}
+
+	isDeleted, err := h.bomService.DeleteBom(input.BomId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "sukses delete BoM", isDeleted))
+}
