@@ -1,7 +1,12 @@
 package repository
 
 import (
+	"encoding/json"
+	"fmt"
+	"time"
+
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
+	"github.com/Kevinmajesta/parfume-erp-backend/pkg/cache"
 	"gorm.io/gorm"
 )
 
@@ -9,20 +14,23 @@ type BOMRepository interface {
 	CreateBOM(bom *entity.Bom) (*entity.Bom, error)
 	GetLastBomId() (string, error)
 	CheckProductExists(productId string) (bool, error)
+	FindAllBom(page int) ([]entity.Bom, error)
 }
 
 type bomRepository struct {
-	db *gorm.DB
+	db        *gorm.DB
+	cacheable cache.Cacheable
 }
 
-func NewBOMRepository(db *gorm.DB) BOMRepository {
-	return &bomRepository{db: db}
+func NewBOMRepository(db *gorm.DB, cacheable cache.Cacheable) BOMRepository {
+	return &bomRepository{db: db, cacheable: cacheable}
 }
 
 func (r *bomRepository) CreateBOM(bom *entity.Bom) (*entity.Bom, error) {
 	if err := r.db.Create(bom).Error; err != nil {
 		return nil, err
 	}
+	r.cacheable.Delete("FindAllBoms_page_1")
 	return bom, nil
 }
 
@@ -43,3 +51,27 @@ func (r *bomRepository) CheckProductExists(productId string) (bool, error) {
 	return count > 0, nil
 }
 
+func (r *bomRepository) FindAllBom(page int) ([]entity.Bom, error) {
+	var Bom []entity.Bom
+	key := fmt.Sprintf("FindAllBoms_page_%d", page)
+	const pageSize = 100
+
+	data, _ := r.cacheable.Get(key)
+	if data == "" {
+		offset := (page - 1) * pageSize
+		if err := r.db.Limit(pageSize).Offset(offset).Find(&Bom).Error; err != nil {
+			return Bom, err
+		}
+		marshalledBoms, _ := json.Marshal(Bom)
+		err := r.cacheable.Set(key, marshalledBoms, 5*time.Minute)
+		if err != nil {
+			return Bom, err
+		}
+	} else {
+		err := json.Unmarshal([]byte(data), &Bom)
+		if err != nil {
+			return Bom, err
+		}
+	}
+	return Bom, nil
+}

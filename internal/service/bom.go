@@ -11,7 +11,7 @@ type BOMService interface {
 	CreateBOM(bom *entity.Bom) (*entity.Bom, error)
 	GetCheckIDProduct(productId string) (bool, error)
 	GetCheckIDMaterial(materialId string) (bool, error)
-
+	FindAllBom(page int) ([]entity.Bom, error)
 }
 
 type bomService struct {
@@ -44,7 +44,7 @@ func (s *bomService) CreateBOM(bom *entity.Bom) (*entity.Bom, error) {
 		return nil, err
 	}
 
-	newBom := entity.NewBom(lastId, bom.ProductId, bom.ProductName, bom.ProductPreference, bom.Quantity, bom.Unit)
+	newBom := entity.NewBom(lastId, bom.ProductId, bom.ProductName, bom.ProductPreference, bom.Quantity)
 
 	savedBom, err := s.bomRepo.CreateBOM(newBom)
 	if err != nil {
@@ -84,4 +84,8 @@ func (s *bomService) GetCheckIDProduct(productId string) (bool, error) {
 
 func (s *bomService) GetCheckIDMaterial(materialId string) (bool, error) {
 	return s.bomMaterialRepo.CheckMaterialExists(materialId)
+}
+
+func (s *bomService) FindAllBom(page int) ([]entity.Bom, error) {
+	return s.bomRepo.FindAllBom(page)
 }

@@ -10,7 +10,6 @@ type Bom struct {
 	ProductName       string        `json:"productname" gorm:"column:productname"`
 	ProductPreference string        `json:"productpreference" gorm:"column:productpreference"`
 	Quantity          string        `json:"quantity" gorm:"column:quantity"`
-	Unit              string        `json:"unit" gorm:"column:unit"`
 	Materials         []BomMaterial `json:"materials" gorm:"-"`
 	Auditable
 }
@@ -36,14 +35,13 @@ func generateBomId(lastId string) string {
 	return fmt.Sprintf("BOM-%05d", newNumber)
 }
 
-func NewBom(lastId, productId, productName, productpreference, quantity, unit string) *Bom {
+func NewBom(lastId, productId, productName, productpreference, quantity string) *Bom {
 	return &Bom{
 		BomId:             generateBomId(lastId),
 		ProductId:         productId,
 		ProductName:       productName,
 		ProductPreference: productpreference,
 		Quantity:          quantity,
-		Unit:              unit,
 		Auditable:         NewAuditable(),
 	}
 }

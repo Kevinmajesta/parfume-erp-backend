@@ -233,5 +233,11 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: bomHandler.CreateBOM,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/bom/all",
+			Handler: bomHandler.FindAllBom,
+			Roles:   allRoles,
+		},
 	}
 }

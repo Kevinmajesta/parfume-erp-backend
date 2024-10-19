@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
@@ -57,7 +58,7 @@ func (h *BOMHandler) CreateBOM(c echo.Context) error {
 		}
 	}
 
-	newBom := entity.NewBom("", input.IdProduct, input.ProductName, input.ProductReference, input.Quantity, input.Unit)
+	newBom := entity.NewBom("", input.IdProduct, input.ProductName, input.ProductReference, input.Quantity)
 
 	var materials []entity.BomMaterial
 	for _, material := range input.Materials {
@@ -88,4 +89,18 @@ func (h *BOMHandler) CreateBOM(c echo.Context) error {
 		},
 		DataBom: *bom,
 	})
+}
+
+func (h *BOMHandler) FindAllBom(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	boms, err := h.bomService.FindAllBom(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data materials", boms))
 }

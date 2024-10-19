@@ -6,7 +6,6 @@ type BOMCreateRequest struct {
 	ProductName      string            `json:"productname"`
 	ProductReference string            `json:"productpreference"`
 	Quantity         string            `json:"quantity"`
-	Unit             string            `json:"unit"`
 	Materials        []MaterialRequest `json:"materials"`
 }
 
