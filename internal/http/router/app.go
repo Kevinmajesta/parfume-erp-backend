@@ -245,5 +245,11 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: bomHandler.DeleteBom,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/bom/edit/:id_bom",
+			Handler: bomHandler.UpdateBOM,
+			Roles:   allRoles,
+		},
 	}
 }

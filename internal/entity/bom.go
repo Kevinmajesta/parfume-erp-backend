@@ -45,3 +45,14 @@ func NewBom(lastId, productId, productName, productpreference, quantity string) 
 		Auditable:         NewAuditable(),
 	}
 }
+
+func UpdateBOM(bomId, productId, productName, productPreference, quantity string) *Bom {
+	return &Bom{
+		BomId:             bomId,
+		ProductId:         productId,
+		ProductName:       productName,
+		ProductPreference: productPreference,
+		Quantity:          quantity,
+		Auditable:         NewAuditable(),
+	}
+}

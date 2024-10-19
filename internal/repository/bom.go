@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -17,6 +18,8 @@ type BOMRepository interface {
 	CheckProductExists(productId string) (bool, error)
 	FindAllBom(page int) ([]entity.Bom, error)
 	DeleteBom(bomId string) (bool, error)
+	UpdateBOM(bom *entity.Bom) (*entity.Bom, error)
+	FindBOMByProductIDAndBOMID(productId string, bomId string) (*entity.Bom, error)
 }
 
 type bomRepository struct {
@@ -85,7 +88,6 @@ func (r *bomRepository) DeleteBom(bomId string) (bool, error) {
 		return false, err
 	}
 
-
 	if err := r.db.Unscoped().Where("id_bom = ?", bomId).Delete(&entity.Bom{}).Error; err != nil {
 		log.Printf("Error deleting bom with ID %s: %v", bomId, err)
 		return false, err
@@ -96,8 +98,23 @@ func (r *bomRepository) DeleteBom(bomId string) (bool, error) {
 	return true, nil
 }
 
+func (r *bomRepository) UpdateBOM(bom *entity.Bom) (*entity.Bom, error) {
+	// Update BOM table
+	if err := r.db.Model(&entity.Bom{}).Where("id_bom = ?", bom.BomId).Updates(bom).Error; err != nil {
+		return nil, err
+	}
+	// Clear cache after update
+	r.cacheable.Delete("FindAllBoms_page_1")
+	return bom, nil
+}
 
-
-
-
-
+func (r *bomRepository) FindBOMByProductIDAndBOMID(productId string, bomId string) (*entity.Bom, error) {
+	var bom entity.Bom
+	if err := r.db.Where("id_product = ? AND id_bom = ?", productId, bomId).First(&bom).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Tidak ditemukan duplikasi
+		}
+		return nil, err // Error lain saat pengecekan
+	}
+	return &bom, nil // Jika ditemukan, artinya ada duplikasi
+}

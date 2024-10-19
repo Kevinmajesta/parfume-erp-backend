@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"gorm.io/gorm"
 )
@@ -10,6 +12,8 @@ type BOMMaterialRepository interface {
 	GetLastMaterialId() (string, error)
 	GetMaterialsByBomId(bomId string) ([]entity.BomMaterial, error)
 	CheckMaterialExists(materialId string) (bool, error)
+	DeleteMaterialsByBomId(bomId string) error
+	FindBOMByMaterialIDAndBOMID(materialId string, bomId string) (*entity.BomMaterial, error)
 }
 
 type bomMaterialRepository struct {
@@ -50,4 +54,23 @@ func (r *bomMaterialRepository) CheckMaterialExists(materialId string) (bool, er
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *bomMaterialRepository) FindBOMByMaterialIDAndBOMID(materialId string, bomId string) (*entity.BomMaterial, error) {
+	var bom entity.BomMaterial
+	if err := r.db.Where("id_material = ? AND id_bom = ?", materialId, bomId).First(&bom).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Tidak ditemukan duplikasi
+		}
+		return nil, err // Error lain saat pengecekan
+	}
+	return &bom, nil // Jika ditemukan, artinya ada duplikasi
+}
+
+func (r *bomMaterialRepository) DeleteMaterialsByBomId(bomId string) error {
+	// Unscoped delete (hard delete) for bom materials related to bomId
+	if err := r.db.Unscoped().Where("id_bom = ?", bomId).Delete(&entity.BomMaterial{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
