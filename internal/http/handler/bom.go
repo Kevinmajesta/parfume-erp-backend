@@ -33,14 +33,14 @@ func generateMaterialId(lastId string) string {
 }
 
 func hasDuplicateMaterials(materials []binder.MaterialRequest) bool {
-    seen := make(map[string]struct{})
-    for _, material := range materials {
-        if _, exists := seen[material.IdMaterial]; exists {
-            return true // Duplikasi ditemukan
-        }
-        seen[material.IdMaterial] = struct{}{}
-    }
-    return false // Tidak ada duplikasi
+	seen := make(map[string]struct{})
+	for _, material := range materials {
+		if _, exists := seen[material.IdMaterial]; exists {
+			return true // Duplikasi ditemukan
+		}
+		seen[material.IdMaterial] = struct{}{}
+	}
+	return false // Tidak ada duplikasi
 }
 
 func (h *BOMHandler) CreateBOM(c echo.Context) error {
@@ -58,8 +58,8 @@ func (h *BOMHandler) CreateBOM(c echo.Context) error {
 	}
 
 	if hasDuplicateMaterials(input.Materials) {
-        return c.JSON(http.StatusConflict, response.ErrorResponseBom(http.StatusConflict, "Duplicate material IDs found in the request"))
-    }
+		return c.JSON(http.StatusConflict, response.ErrorResponseBom(http.StatusConflict, "Duplicate material IDs found in the request"))
+	}
 
 	for _, material := range input.Materials {
 		fmt.Println("Received Material Id:", material.IdMaterial) // Log ID material
@@ -136,80 +136,96 @@ func (h *BOMHandler) DeleteBom(c echo.Context) error {
 }
 
 func (h *BOMHandler) UpdateBOM(c echo.Context) error {
-    // Parse the BOM ID from the URL
-    bomId := c.Param("id_bom")
+	// Parse the BOM ID from the URL
+	bomId := c.Param("id_bom")
 
-    // Bind the input data
-    var input binder.BOMUpdateRequest
-    if err := c.Bind(&input); err != nil {
-        return c.JSON(http.StatusBadRequest, response.ErrorResponseBom(http.StatusBadRequest, "Invalid input"))
-    }
+	// Bind the input data
+	var input binder.BOMUpdateRequest
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponseBom(http.StatusBadRequest, "Invalid input"))
+	}
 
-    // Validate the existence of the product
-    exists, err := h.bomService.GetCheckIDProduct(input.IdProduct)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
-    }
-    if !exists {
-        return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("Product with id %s does not exist", input.IdProduct)))
-    }
+	// Validate the existence of the product
+	exists, err := h.bomService.GetCheckIDProduct(input.IdProduct)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
+	}
+	if !exists {
+		return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("Product with id %s does not exist", input.IdProduct)))
+	}
 
+	// Validasi duplikasi id_material
+	if hasDuplicateMaterials(input.Materials) {
+		return c.JSON(http.StatusConflict, response.ErrorResponseBom(http.StatusConflict, "Duplicate material IDs found in the request"))
+	}
 
-    // Validasi duplikasi id_material
-    if hasDuplicateMaterials(input.Materials) {
-        return c.JSON(http.StatusConflict, response.ErrorResponseBom(http.StatusConflict, "Duplicate material IDs found in the request"))
-    }
+	// Prepare BOM entity using the input and the existing BOM ID
+	updatedBomEntity := entity.UpdateBOM(bomId, input.IdProduct, input.ProductName, input.ProductReference, input.Quantity)
 
-    // Prepare BOM entity using the input and the existing BOM ID
-    updatedBomEntity := entity.UpdateBOM(bomId, input.IdProduct, input.ProductName, input.ProductReference, input.Quantity)
+	// Prepare materials for update
+	var updatedMaterials []entity.BomMaterial
+	for _, material := range input.Materials {
+		updatedMaterials = append(updatedMaterials, entity.BomMaterial{
+			IdBomMaterial: material.IdBomMaterial,
+			IdMaterial:    material.IdMaterial,
+			MaterialName:  material.MaterialName,
+			Quantity:      material.Quantity,
+			Unit:          material.Unit,
+			BomId:         bomId, // Associate the BOM ID
+		})
+	}
+	updatedBomEntity.Materials = updatedMaterials
 
-    // Prepare materials for update
-    var updatedMaterials []entity.BomMaterial
-    for _, material := range input.Materials {
-        updatedMaterials = append(updatedMaterials, entity.BomMaterial{
-            IdBomMaterial: material.IdBomMaterial,
-            IdMaterial:    material.IdMaterial,
-            MaterialName:  material.MaterialName,
-            Quantity:      material.Quantity,
-            Unit:          material.Unit,
-            BomId:         bomId, // Associate the BOM ID
-        })
-    }
-    updatedBomEntity.Materials = updatedMaterials
+	// Call the service to update the BOM and materials
+	updatedBom, err := h.bomService.UpdateBOM(updatedBomEntity)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, "Failed to update BoM"))
+	}
 
-    // Call the service to update the BOM and materials
-    updatedBom, err := h.bomService.UpdateBOM(updatedBomEntity)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, "Failed to update BoM"))
-    }
-
-    return c.JSON(http.StatusOK, response.BOMResponse{
-        Meta: response.Meta{
-            Code:    200,
-            Message: "Successfully updated BoM",
-        },
-        DataBom: *updatedBom,
-    })
+	return c.JSON(http.StatusOK, response.BOMResponse{
+		Meta: response.Meta{
+			Code:    200,
+			Message: "Successfully updated BoM",
+		},
+		DataBom: *updatedBom,
+	})
 }
 
 func (h *BOMHandler) GetBOMByID(c echo.Context) error {
-    bomId := c.Param("id_bom")
+	bomId := c.Param("id_bom")
 
-    bom, err := h.bomService.GetBOMByID(bomId)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
-    }
-    if bom == nil {
-        return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("BOM with ID %s not found", bomId)))
-    }
+	bom, err := h.bomService.GetBOMByID(bomId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
+	}
+	if bom == nil {
+		return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("BOM with ID %s not found", bomId)))
+	}
 
-    return c.JSON(http.StatusOK, response.BOMResponse{
-        Meta: response.Meta{
-            Code:    200,
-            Message: "Successfully retrieved BoM",
-        },
-        DataBom: *bom,
-    })
+	return c.JSON(http.StatusOK, response.BOMResponse{
+		Meta: response.Meta{
+			Code:    200,
+			Message: "Successfully retrieved BoM",
+		},
+		DataBom: *bom,
+	})
 }
 
+func (h *BOMHandler) GetBOMOverview(c echo.Context) error {
+	bomId := c.Param("id_bom") // Ensure this matches how you define your routes
 
+	if bomId == "" {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "BOM ID cannot be empty"))
+	}
+
+	overview, err := h.bomService.CalculateOverview(bomId)
+	if err != nil {
+		// Handle specific error scenarios
+		if err.Error() == "BOM not found" {
+			return c.JSON(http.StatusNotFound, response.ErrorResponse(http.StatusNotFound, err.Error()))
+		}
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "BOM overview retrieved successfully", overview))
+}

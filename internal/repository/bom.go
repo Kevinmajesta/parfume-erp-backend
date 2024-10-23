@@ -21,6 +21,7 @@ type BOMRepository interface {
 	UpdateBOM(bom *entity.Bom) (*entity.Bom, error)
 	FindBOMByProductIDAndBOMID(productId string, bomId string) (*entity.Bom, error)
 	FindBOMByID(bomId string) (*entity.Bom, error)
+	GetProductDetails(productId string) (*entity.Products, error)
 }
 
 type bomRepository struct {
@@ -120,16 +121,23 @@ func (r *bomRepository) FindBOMByProductIDAndBOMID(productId string, bomId strin
 	return &bom, nil // Jika ditemukan, artinya ada duplikasi
 }
 
-// Repository Layer
 func (r *bomRepository) FindBOMByID(bomId string) (*entity.Bom, error) {
     var bom entity.Bom
     if err := r.db.Preload("Materials").Where("id_bom = ?", bomId).First(&bom).Error; err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            return nil, nil // Tidak ditemukan
+            return nil, nil 
         }
-        return nil, err // Error lain saat pengambilan data
+        return nil, err
     }
-    return &bom, nil // Jika ditemukan, kembalikan data BoM
+    return &bom, nil 
+}
+
+func (r *bomRepository) GetProductDetails(productId string) (*entity.Products, error) {
+    var product entity.Products
+    if err := r.db.Table("products").Where("id_product = ?", productId).First(&product).Error; err != nil {
+        return nil, err
+    }
+    return &product, nil
 }
 
 

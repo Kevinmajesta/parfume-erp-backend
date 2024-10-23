@@ -14,6 +14,7 @@ type BOMMaterialRepository interface {
 	CheckMaterialExists(materialId string) (bool, error)
 	DeleteMaterialsByBomId(bomId string) error
 	FindBOMByMaterialIDAndBOMID(materialId string, bomId string) (*entity.BomMaterial, error)
+	GetMaterialDetails(materialId string) (*entity.Materials, error)
 }
 
 type bomMaterialRepository struct {
@@ -68,9 +69,18 @@ func (r *bomMaterialRepository) FindBOMByMaterialIDAndBOMID(materialId string, b
 }
 
 func (r *bomMaterialRepository) DeleteMaterialsByBomId(bomId string) error {
-	// Unscoped delete (hard delete) for bom materials related to bomId
+
 	if err := r.db.Unscoped().Where("id_bom = ?", bomId).Delete(&entity.BomMaterial{}).Error; err != nil {
 		return err
 	}
 	return nil
+}
+
+
+func (r *bomMaterialRepository) GetMaterialDetails(materialId string) (*entity.Materials, error) {
+    var material entity.Materials
+    if err := r.db.Table("materials").Where("id_material = ?", materialId).First(&material).Error; err != nil {
+        return nil, err
+    }
+    return &material, nil
 }
