@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS materials (
     makeprice  VARCHAR(50) NOT NULL,
     unit VARCHAR(50) NOT NULL,
     image VARCHAR(255) NOT NULL,
+    qty VARCHAR(255) null,
     description TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),

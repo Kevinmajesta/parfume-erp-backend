@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS products (
     makeprice  VARCHAR(50) NOT NULL,
     pajak VARCHAR(50) NOT NULL,
     image VARCHAR(255) NOT NULL,
+    qty VARCHAR(255) null,
     variant VARCHAR(3) NOT NULL CHECK (variant IN ('yes', 'no')),
     description TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
