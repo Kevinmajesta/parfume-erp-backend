@@ -86,9 +86,6 @@ func (r *productRepository) UpdateProduct(product *entity.Products) (*entity.Pro
 	if product.Description != "" {
 		fields["description"] = product.Description
 	}
-	if product.Image != "" {
-		fields["image"] = product.Image
-	}
 
 	if err := r.db.Model(product).Where("id_product = ?", product.ProdukId).Updates(fields).Error; err != nil {
 		return product, err

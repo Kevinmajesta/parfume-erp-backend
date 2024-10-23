@@ -46,7 +46,7 @@ func NewProduct(lastId, productname, productcategory,
 }
 
 func UpdateProduct(id_product, productname, productcategory,
-	sellprice, makeprice, pajak, description, image, variant  string) *Products {
+	sellprice, makeprice, pajak, description, variant  string) *Products {
 	return &Products{
 		ProdukId:        id_product,
 		Productname:     productname,
@@ -55,7 +55,6 @@ func UpdateProduct(id_product, productname, productcategory,
 		Makeprice:       makeprice,
 		Pajak:           pajak,
 		Description:     description,
-		Image:           image,
 		Variant:         variant,
 		Auditable:       UpdateAuditable(),
 	}

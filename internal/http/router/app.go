@@ -162,6 +162,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 		},
 		{
 			Method:  http.MethodGet,
+			Path:    "/product/:id_product",
+			Handler: productHandler.GetProductProfile,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
 			Path:    "/product/pdf",
 			Handler: productHandler.GenerateAllProductsPDFHandler,
 			Roles:   allRoles,

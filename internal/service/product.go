@@ -28,6 +28,7 @@ type ProductService interface {
 	GenerateBarcode(id string) (string, error)
 	GenerateAllProductsPDF(page int) (string, error)
 	FindAllProductVariant(page int) ([]entity.Products, error)
+	GetProductByID(productId string) (*entity.Products, error)
 }
 
 type productService struct {
@@ -107,9 +108,6 @@ func (s *productService) UpdateProduct(product *entity.Products) (*entity.Produc
 	}
 	if product.Description == "" {
 		return nil, errors.New("Description cannot be empty")
-	}
-	if product.Image == "" {
-		return nil, errors.New("Image cannot be empty")
 	}
 
 	if product.Variant != "yes" && product.Variant != "no" {
@@ -307,4 +305,13 @@ func (s *productService) GenerateAllProductsPDF(page int) (string, error) {
 	}
 
 	return fileName, nil
+}
+
+func (s *productService) GetProductByID(productId string) (*entity.Products, error) {
+
+	product, err := s.productRepository.FindProductByID(productId)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
 }

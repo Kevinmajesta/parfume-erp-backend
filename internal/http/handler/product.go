@@ -88,7 +88,6 @@ func (h *ProductHandler) CreateProduct(c echo.Context) error {
 
 func (h *ProductHandler) UpdateProduct(c echo.Context) error {
 	var input binder.ProductUpdateRequest
-	var imageURL string
 
 	if err := c.Bind(&input); err != nil {
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "there is an input error"))
@@ -105,41 +104,7 @@ func (h *ProductHandler) UpdateProduct(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, response.ErrorResponse(http.StatusNotFound, "produk ID does not exist"))
 	}
 
-	file, err := c.FormFile("image")
-
-	if err == nil {
-		// Check image format
-		chckFormat := strings.ToLower(filepath.Ext(file.Filename))
-		if chckFormat != ".jpg" && chckFormat != ".jpeg" && chckFormat != ".png" {
-			return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Invalid image format. Only jpg, jpeg, and png are allowed"))
-		}
-
-		src, err := file.Open()
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to open image"))
-		}
-		defer src.Close()
-
-		imageID := uuid.New()
-		imageFilename := fmt.Sprintf("%s%s", imageID, filepath.Ext(file.Filename))
-		imagePath := filepath.Join("assets", "images", imageFilename)
-
-		dst, err := os.Create(imagePath)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to create image file"))
-		}
-		defer dst.Close()
-
-		if _, err := io.Copy(dst, src); err != nil {
-			return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to copy image file"))
-		}
-
-		imageURL = "/assets/images/" + imageFilename
-	} else {
-		imageURL = ""
-	}
-
-	inputUser := entity.UpdateProduct(input.ProdukId, input.ProductName, input.ProductCategory, input.SellPrice, input.MakePrice, input.Pajak, input.Description, imageURL, input.Variant)
+	inputUser := entity.UpdateProduct(input.ProdukId, input.ProductName, input.ProductCategory, input.SellPrice, input.MakePrice, input.Pajak, input.Description, input.Variant)
 
 	updatedProduk, err := h.productService.UpdateProduct(inputUser)
 	if err != nil {
@@ -248,4 +213,15 @@ func (h *ProductHandler) GenerateAllProductsPDFHandler(c echo.Context) error {
 	}
 
 	return c.File(fileName)
+}
+
+func (h *ProductHandler) GetProductProfile(c echo.Context) error {
+	product_ID := c.Param("id_product")
+
+	product, err := h.productService.FindProductByID(product_ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to get product"))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays product data", product))
 }

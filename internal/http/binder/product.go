@@ -22,7 +22,6 @@ type ProductUpdateRequest struct {
 	SellPrice       string                `form:"sellprice" validate:"required"`
 	MakePrice       string                `form:"makeprice" validate:"required"`
 	Pajak           string                `form:"pajak" validate:"required"`
-	Image           *multipart.FileHeader `form:"image" validate:"required"`
 	Description     string                `form:"description" validate:"required"`
 	Variant         string                `form:"variant" validate:"required,oneof=yes no"`
 }
