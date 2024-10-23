@@ -2,6 +2,9 @@ package service
 
 import (
 	"fmt"
+	"strings"
+
+	"strconv"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
@@ -17,6 +20,7 @@ type BOMService interface {
 	CheckDuplicateProductInBOM(productId string, bomId string) (bool, error)
 	CheckDuplicateMaterialInBOM(materialId string, bomId string) (bool, error)
 	GetBOMByID(bomId string) (*entity.Bom, error)
+	CalculateOverview(bomId string) (map[string]interface{}, error)
 }
 
 type bomService struct {
@@ -168,5 +172,76 @@ func (s *bomService) CheckDuplicateMaterialInBOM(materialId string, bomId string
 
 // Service Layer
 func (s *bomService) GetBOMByID(bomId string) (*entity.Bom, error) {
-    return s.bomRepo.FindBOMByID(bomId)
+	return s.bomRepo.FindBOMByID(bomId)
+}
+
+func (s *bomService) CalculateOverview(bomId string) (map[string]interface{}, error) {
+	bom, err := s.bomRepo.FindBOMByID(bomId)
+	if err != nil {
+		return nil, err
+	}
+
+	overview := make(map[string]interface{})
+	overview["bom_id"] = bom.BomId
+	overview["product_name"] = bom.ProductName
+	overview["materials"] = []map[string]interface{}{}
+	totalCost := 0.0
+
+	// Fetch product details once to use for all materials
+	productDetails, err := s.bomRepo.GetProductDetails(bom.ProductId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepare product details for overview
+	overview["product_details"] = map[string]interface{}{
+		"make_price": productDetails.Makeprice,
+		"sell_price": productDetails.Sellprice,
+	}
+
+	for _, material := range bom.Materials {
+		// Fetch material price
+		materialDetails, err := s.bomMaterialRepo.GetMaterialDetails(material.IdMaterial)
+		if err != nil {
+			return nil, err
+		}
+
+		// Prepare material detail for overview
+		quantity, err := strconv.ParseFloat(material.Quantity, 64)
+		if err != nil {
+			return nil, err
+		}
+		makePrice, err := strconv.ParseFloat(materialDetails.Makeprice, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		// Calculate product cost based on quantity
+		productCost := makePrice * quantity
+
+		materialDetail := map[string]interface{}{
+			"material":     material.MaterialName,
+			"quantity":     material.Quantity,
+			"product_cost": fmt.Sprintf("%.2f", productCost), // Calculated value
+			"bom_cost":     materialDetails.Sellprice, // Use sell price or whatever is appropriate
+		}
+
+		// Calculate total cost
+		totalCost += productCost
+
+		overview["materials"] = append(overview["materials"].([]map[string]interface{}), materialDetail)
+	}
+
+	overview["total_cost"] = fmt.Sprintf("Rp %.2f", totalCost)
+	return overview, nil
+}
+
+
+
+// Fungsi untuk parsing biaya
+func parseCost(costStr string) (float64, error) {
+	// Hapus "Rp " dan konversi menjadi float64
+	cleanedCost := strings.ReplaceAll(costStr, "Rp ", "")
+	cleanedCost = strings.ReplaceAll(cleanedCost, ".", "") // Hapus titik jika ada
+	return strconv.ParseFloat(cleanedCost, 64)
 }

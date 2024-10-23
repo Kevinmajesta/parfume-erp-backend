@@ -154,12 +154,4 @@ func (r *materialRepository) SearchByName(name string) ([]entity.Materials, erro
 	return Materials, nil
 }
 
-func (r *userRepository) FindMaterialByID(materialId string) (*entity.Materials, error) {
-	material := new(entity.Materials)
 
-	if err := r.db.Where("id_material = ?", materialId).Take(material).Error; err != nil {
-		return nil, err
-	}
-
-	return material, nil
-}

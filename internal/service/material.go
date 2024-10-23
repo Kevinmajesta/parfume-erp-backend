@@ -104,9 +104,6 @@ func (s *materialService) UpdateMaterial(material *entity.Materials) (*entity.Ma
 	if material.Description == "" {
 		return nil, errors.New("Description cannot be empty")
 	}
-	if material.Image == "" {
-		return nil, errors.New("Image cannot be empty")
-	}
 
 	updatedMaterial, err := s.materialRepository.UpdateMaterial(material)
 	if err != nil {

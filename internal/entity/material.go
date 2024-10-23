@@ -44,7 +44,7 @@ func NewMaterials(lastId, materialname, materialcategory,
 }
 
 func UpdateMaterials(id_material, materialname, materialcategory,
-	sellprice, makeprice, unit, description, image string) *Materials {
+	sellprice, makeprice, unit, description string) *Materials {
 	return &Materials{
 		MaterialId:       id_material,
 		Materialname:     materialname,
@@ -53,7 +53,6 @@ func UpdateMaterials(id_material, materialname, materialcategory,
 		Makeprice:        makeprice,
 		Unit:             unit,
 		Description:      description,
-		Image:            image,
 		Auditable:        UpdateAuditable(),
 	}
 }
