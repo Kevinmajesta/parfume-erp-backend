@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -8,6 +9,7 @@ import (
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
+	"github.com/jung-kurt/gofpdf"
 )
 
 type BOMService interface {
@@ -21,6 +23,7 @@ type BOMService interface {
 	CheckDuplicateMaterialInBOM(materialId string, bomId string) (bool, error)
 	GetBOMByID(bomId string) (*entity.Bom, error)
 	CalculateOverview(bomId string) (map[string]interface{}, error)
+	GenerateBOMPDF(overview map[string]interface{}) ([]byte, error)
 }
 
 type bomService struct {
@@ -223,7 +226,7 @@ func (s *bomService) CalculateOverview(bomId string) (map[string]interface{}, er
 			"material":     material.MaterialName,
 			"quantity":     material.Quantity,
 			"product_cost": fmt.Sprintf("%.2f", productCost), // Calculated value
-			"bom_cost":     materialDetails.Sellprice, // Use sell price or whatever is appropriate
+			"bom_cost":     materialDetails.Sellprice,        // Use sell price or whatever is appropriate
 		}
 
 		// Calculate total cost
@@ -236,7 +239,55 @@ func (s *bomService) CalculateOverview(bomId string) (map[string]interface{}, er
 	return overview, nil
 }
 
+func (s *bomService) GenerateBOMPDF(overview map[string]interface{}) ([]byte, error) {
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
 
+	// Set font
+	pdf.SetFont("Arial", "B", 16)
+	pdf.Cell(40, 10, "BOM Overview")
+	pdf.Ln(10)
+
+	pdf.SetFont("Arial", "", 12)
+
+	// Add BOM ID and product name
+	pdf.Cell(40, 10, "BOM ID: "+overview["bom_id"].(string))
+	pdf.Ln(5)
+	pdf.Cell(40, 10, "Product Name: "+overview["product_name"].(string))
+	pdf.Ln(10)
+
+	// Add product details
+	productDetails := overview["product_details"].(map[string]interface{})
+	pdf.Cell(40, 10, "Make Price: "+productDetails["make_price"].(string))
+	pdf.Ln(5)
+	pdf.Cell(40, 10, "Sell Price: "+productDetails["sell_price"].(string))
+	pdf.Ln(10)
+
+	// Add materials details
+	pdf.Cell(40, 10, "Materials:")
+	pdf.Ln(5)
+
+	materials := overview["materials"].([]map[string]interface{})
+	for _, material := range materials {
+		pdf.Cell(40, 10, material["material"].(string))
+		pdf.Cell(40, 10, "Quantity: "+material["quantity"].(string))
+		pdf.Cell(55, 10, "Product Cost: "+material["product_cost"].(string))
+		pdf.Cell(40, 10, "BOM Cost: "+material["bom_cost"].(string))
+		pdf.Ln(5)
+	}
+
+	// Add total cost
+	pdf.Ln(10)
+	pdf.Cell(40, 10, "Total Cost: "+overview["total_cost"].(string))
+
+	// Output PDF to buffer
+	var buf bytes.Buffer
+	err := pdf.Output(&buf)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
 
 // Fungsi untuk parsing biaya
 func parseCost(costStr string) (float64, error) {

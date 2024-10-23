@@ -229,3 +229,32 @@ func (h *BOMHandler) GetBOMOverview(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "BOM overview retrieved successfully", overview))
 }
+
+func (h *BOMHandler) GetBOMPDF(c echo.Context) error {
+	bomId := c.Param("id_bom")
+
+	if bomId == "" {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "BOM ID cannot be empty"))
+	}
+
+	overview, err := h.bomService.CalculateOverview(bomId)
+	if err != nil {
+		if err.Error() == "BOM not found" {
+			return c.JSON(http.StatusNotFound, response.ErrorResponse(http.StatusNotFound, err.Error()))
+		}
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
+	}
+
+	// Generate PDF
+	pdfData, err := h.bomService.GenerateBOMPDF(overview)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Error generating PDF"))
+	}
+
+	// Serve the PDF
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=bom_overview.pdf")
+	c.Response().Write(pdfData)
+
+	return nil
+}
