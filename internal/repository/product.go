@@ -47,13 +47,11 @@ func (r *productRepository) GetLastProduct() (string, error) {
 	err := r.db.Order("id_product DESC").First(&lastProduct).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		// Jika tidak ada produk terakhir, return ID default
 		return "PRF-00000", nil
 	} else if err != nil {
 		return "", err
 	}
 
-	// Jika produk ditemukan, return ProdukId dari produk terakhir
 	return lastProduct.ProdukId, nil
 }
 

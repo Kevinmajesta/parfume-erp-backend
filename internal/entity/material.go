@@ -13,6 +13,7 @@ type Materials struct {
 	Unit             string `form:"unit"`
 	Description      string `form:"description"`
 	Image            string `form:"image"`
+	Qty              string `form:"qty"`
 	Auditable
 }
 

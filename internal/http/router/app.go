@@ -45,7 +45,7 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
 	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler,
-	bomHandler handler.BOMHandler) []*route.Route {
+	bomHandler handler.BOMHandler, moHandler handler.MoHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -268,10 +268,17 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Path:    "/bom/:id_bom/overview",
 			Handler: bomHandler.GetBOMOverview,
 			Roles:   allRoles,
-		}, {
+		},
+		{
 			Method:  http.MethodGet,
 			Path:    "/bom/:id_bom/overview/pdf",
 			Handler: bomHandler.GetBOMPDF,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/mo",
+			Handler: moHandler.CreateMo,
 			Roles:   allRoles,
 		},
 	}

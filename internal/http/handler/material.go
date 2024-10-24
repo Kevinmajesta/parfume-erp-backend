@@ -64,7 +64,6 @@ func (h *MaterialHandler) CreateMaterial(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to copy image file"))
 	}
 
-	// Buat entitas produk dari input
 	newMaterial := &entity.Materials{
 		Materialname:     input.MaterialName,
 		Materialcategory: input.MaterialCategory,
