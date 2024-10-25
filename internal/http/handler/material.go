@@ -87,7 +87,6 @@ func (h *MaterialHandler) CreateMaterial(c echo.Context) error {
 func (h *MaterialHandler) UpdateMaterial(c echo.Context) error {
 	var input binder.MaterialUpdateRequest
 
-
 	if err := c.Bind(&input); err != nil {
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "there is an input error"))
 	}
@@ -102,7 +101,6 @@ func (h *MaterialHandler) UpdateMaterial(c echo.Context) error {
 	if !exists {
 		return c.JSON(http.StatusNotFound, response.ErrorResponse(http.StatusNotFound, "material ID does not exist"))
 	}
-
 
 	inputMaterial := entity.UpdateMaterials(input.MaterialId, input.MaterialtName, input.MaterialtCategory, input.SellPrice, input.MakePrice, input.Unit, input.Description)
 
@@ -210,5 +208,33 @@ func (h *MaterialHandler) GetMaterialProfile(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays material data", material))
+}
+
+func (h *MaterialHandler) ReduceMaterialQty(c echo.Context) error {
+    // Bind input to MinQtyMaterial
+    var input binder.MinQtyMaterial
+    if err := c.Bind(&input); err != nil {
+        return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed Input"))
+    }
+
+    // Validate the input
+    if err := c.Validate(&input); err != nil {
+        return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Validation Error: "+err.Error()))
+    }
+
+    // Create an entity.Materials from input
+    material := entity.Materials{
+        MaterialId: input.MaterialId,
+        Qty:        input.Qty, // Now the Qty is a float64
+    }
+
+    // Call the service to reduce the material quantity
+    updatedMaterial, err := h.materialService.ReduceMaterialQty(material)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
+    }
+
+    // Return the updated material
+    return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Successfully reduced material quantity", updatedMaterial))
 }
 

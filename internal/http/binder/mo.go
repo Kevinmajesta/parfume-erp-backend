@@ -5,3 +5,4 @@ type MoCreateRequest struct {
 	BomId        string `json:"id_bom" validate:"required"`
 	Qtytoproduce string `json:"qtytoproduce" validate:"required"`
 }
+

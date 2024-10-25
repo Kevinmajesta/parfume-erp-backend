@@ -28,3 +28,11 @@ type MaterialUpdateRequest struct {
 type MaterialDeleteRequest struct {
 	MaterialId string `param:"id_material" validate:"required"`
 }
+
+type MinQtyMaterial struct {
+    MaterialId string  `json:"MaterialId" validate:"required"` // Update to match incoming JSON
+    Qty        float64 `json:"Qty" validate:"required,numeric"` // Update to match incoming JSON
+}
+
+
+

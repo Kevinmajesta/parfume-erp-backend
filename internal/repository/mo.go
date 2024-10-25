@@ -43,3 +43,4 @@ func (r *moRepository) CreateMo(mo *entity.Mos) (*entity.Mos, error) {
 	// r.cacheable.Delete("FindAllMos_page_2")
 	return mo, nil
 }
+

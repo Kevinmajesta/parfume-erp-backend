@@ -34,3 +34,4 @@ func (s *moService) CreateMo(mo *entity.Mos) (*entity.Mos, error) {
 
 	return savedMo, nil
 }
+

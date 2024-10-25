@@ -28,6 +28,7 @@ type MaterialService interface {
 	GenerateBarcode(id string) (string, error)
 	GenerateMaterialPDF(id string) (string, error)
 	GetMaterialByID(materialId string) (*entity.Materials, error)
+	ReduceMaterialQty(input entity.Materials) (*entity.Materials, error)
 }
 
 type materialService struct {
@@ -202,7 +203,6 @@ func (s *materialService) GenerateBarcode(id string) (string, error) {
 	return barcodeFile, nil
 }
 
-// GenerateBarcodePDF untuk memasukkan barcode ke dalam PDF
 func (s *materialService) GenerateBarcodePDF(id string) (string, error) {
 	material, err := s.materialRepository.FindMaterialByID(id)
 	if err != nil {
@@ -295,3 +295,29 @@ func (s *materialService) GetMaterialByID(materialId string) (*entity.Materials,
 	}
 	return material, nil
 }
+
+func (s *materialService) ReduceMaterialQty(input entity.Materials) (*entity.Materials, error) {
+    // Fetch material by ID
+    material, err := s.materialRepository.FindMaterialByID(input.MaterialId)
+    if err != nil {
+        return nil, errors.New("material not found")
+    }
+
+    // Check if there's enough quantity
+    if material.Qty < input.Qty {
+        return nil, errors.New("insufficient quantity")
+    }
+
+    // Reduce the quantity
+    material.Qty -= input.Qty // This works as both are float64
+
+    // Update material in database
+    err = s.materialRepository.Update(material)
+    if err != nil {
+        return nil, errors.New("failed to update material")
+    }
+
+    return material, nil
+}
+
+

@@ -21,6 +21,7 @@ type MaterialRepository interface {
 	DeleteMaterial(material *entity.Materials) (bool, error)
 	FindAllMaterial(page int) ([]entity.Materials, error)
 	SearchByName(name string) ([]entity.Materials, error)
+	Update(material *entity.Materials) error
 }
 
 type materialRepository struct {
@@ -154,4 +155,7 @@ func (r *materialRepository) SearchByName(name string) ([]entity.Materials, erro
 	return Materials, nil
 }
 
+func (r *materialRepository) Update(material *entity.Materials) error {
+	return r.db.Save(material).Error
+}
 

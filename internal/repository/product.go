@@ -22,6 +22,7 @@ type ProductRepository interface {
 	FindAllProduct(page int) ([]entity.Products, error)
 	SearchByName(name string) ([]entity.Products, error)
 	FindAllProductVariant(page int) ([]entity.Products, error)
+	Update(product *entity.Products) error
 }
 
 type productRepository struct {
@@ -173,4 +174,8 @@ func (r *productRepository) SearchByName(name string) ([]entity.Products, error)
 		return nil, err
 	}
 	return products, nil
+}
+
+func (r *productRepository) Update(product *entity.Products) error {
+	return r.db.Save(product).Error
 }

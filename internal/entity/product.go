@@ -5,15 +5,16 @@ import (
 )
 
 type Products struct {
-	ProdukId        string `json:"id_product" gorm:"column:id_product;primaryKey"`
-	Productname     string `form:"productname"`
-	Productcategory string `form:"productcategory"`
-	Sellprice       string `form:"sellprice"`
-	Makeprice       string `form:"makeprice"`
-	Pajak           string `form:"pajak"`
-	Description     string `form:"description"`
-	Variant         string `form:"variant" gorm:"column:variant"` 
-	Image           string `form:"image"`
+	ProdukId        string  `json:"id_product" gorm:"column:id_product;primaryKey"`
+	Productname     string  `form:"productname"`
+	Productcategory string  `form:"productcategory"`
+	Sellprice       string  `form:"sellprice"`
+	Makeprice       string  `form:"makeprice"`
+	Pajak           string  `form:"pajak"`
+	Description     string  `form:"description"`
+	Variant         string  `form:"variant" gorm:"column:variant"`
+	Image           string  `form:"image"`
+	Qty             float64 `form:"qty"`
 	Auditable
 }
 
@@ -46,7 +47,7 @@ func NewProduct(lastId, productname, productcategory,
 }
 
 func UpdateProduct(id_product, productname, productcategory,
-	sellprice, makeprice, pajak, description, variant  string) *Products {
+	sellprice, makeprice, pajak, description, variant string) *Products {
 	return &Products{
 		ProdukId:        id_product,
 		Productname:     productname,

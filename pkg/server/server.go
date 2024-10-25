@@ -11,6 +11,7 @@ import (
 
 	"github.com/Kevinmajesta/parfume-erp-backend/pkg/response"
 	"github.com/Kevinmajesta/parfume-erp-backend/pkg/route"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -24,6 +25,12 @@ func NewServer(serverName string, publicRoutes, privateRoutes []*route.Route) *S
 	e.Use(middleware.CORS())
 
 	e.Static("/assets", "assets")
+
+	// Create a new validator
+	validate := validator.New()
+
+	// Register the validator
+	e.Validator = &CustomValidator{Validator: validate}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://127.0.0.1:8000/"},
@@ -76,7 +83,6 @@ func gracefulShutdown(srv *Server) {
 	}
 }
 
-
 func contains(slice []string, s string) bool {
 	for _, value := range slice {
 		if value == s {
@@ -84,4 +90,14 @@ func contains(slice []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// CustomValidator wraps the validator instance
+type CustomValidator struct {
+	Validator *validator.Validate
+}
+
+// Validate method implements the Validator interface
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.Validator.Struct(i)
 }
