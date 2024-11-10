@@ -6,3 +6,10 @@ type MoCreateRequest struct {
 	Qtytoproduce string `json:"qtytoproduce" validate:"required"`
 }
 
+type UpdateMoStatusRequest struct {
+	MoId string `json:"id_mo" validate:"required"`
+}
+
+type MoDeleteRequest struct {
+	MoId string `param:"id_mo" validate:"required"`
+}

@@ -45,7 +45,7 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
 	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler,
-	bomHandler handler.BOMHandler, moHandler handler.MoHandler) []*route.Route {
+	bomHandler handler.BOMHandler, moHandler handler.MoHandler, vendorHandler handler.VendorHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -291,6 +291,49 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodPost,
 			Path:    "/mo",
 			Handler: moHandler.CreateMo,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/mo/status/confirm",
+			Handler: moHandler.UpdateMoStatus,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/mo/all",
+			Handler: moHandler.FindAllMos,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/mo/:id_mo",
+			Handler: moHandler.GetMoProfile,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/mo/:id_mo",
+			Handler: moHandler.DeleteMo,
+			Roles:   allRoles,
+		},
+		//vendor
+		{
+			Method:  http.MethodPost,
+			Path:    "/vendor",
+			Handler: vendorHandler.CreateVendor,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/vendor/:id_vendor",
+			Handler: vendorHandler.UpdateVendor,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/vendor/:id_vendor",
+			Handler: vendorHandler.DeleteVendor,
 			Roles:   allRoles,
 		},
 	}
