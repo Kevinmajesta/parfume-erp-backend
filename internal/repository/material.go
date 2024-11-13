@@ -156,6 +156,8 @@ func (r *materialRepository) SearchByName(name string) ([]entity.Materials, erro
 }
 
 func (r *materialRepository) Update(material *entity.Materials) error {
+	r.cacheable.Delete("FindAllMaterials_page_1")
 	return r.db.Save(material).Error
+	
 }
 
