@@ -26,7 +26,7 @@ func (h *MoHandler) CreateMo(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "there is an input error"))
 	}
 
-	NewMo := entity.NewMos("", input.BomId, input.ProductId, input.Qtytoproduce)
+	NewMo := entity.NewMos("", input.ProductId, input.BomId, input.Qtytoproduce)
 	mo, err := h.moService.CreateMo(NewMo)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))

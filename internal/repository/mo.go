@@ -68,7 +68,7 @@ func (r *moRepository) UpdateMoStatus(mo *entity.Mos) (*entity.Mos, error) {
 
 func (r *moRepository) FindAllMos(page int) ([]entity.Mos, error) {
 	var Mos []entity.Mos
-	key := fmt.Sprintf("FindAllMos_page_%d", page)
+	key := fmt.Sprintf("FindAllMo_page_%d", page)
 	const pageSize = 100
 
 	data, _ := r.cacheable.Get(key)
