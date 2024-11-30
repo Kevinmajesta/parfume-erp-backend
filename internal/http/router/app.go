@@ -45,7 +45,7 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
 	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler,
-	bomHandler handler.BOMHandler, moHandler handler.MoHandler, vendorHandler handler.VendorHandler) []*route.Route {
+	bomHandler handler.BOMHandler, moHandler handler.MoHandler, vendorHandler handler.VendorHandler, rfqHandler handler.RfqHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -334,6 +334,19 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodDelete,
 			Path:    "/vendor/:id_vendor",
 			Handler: vendorHandler.DeleteVendor,
+			Roles:   allRoles,
+		},
+		//RFQ
+		{
+			Method:  http.MethodPost,
+			Path:    "/rfq",
+			Handler: rfqHandler.CreateRfq,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/rfq",
+			Handler: rfqHandler.UpdateRfq,
 			Roles:   allRoles,
 		},
 	}
