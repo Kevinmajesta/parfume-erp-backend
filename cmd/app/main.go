@@ -29,8 +29,8 @@ func main() {
 	entityCfg := convertToEntityConfig(cfg)
 
 	// Build public and private routes
-	publicRoutes := builder.BuildPublicRoutes(db, redisDB, entityCfg , encryptTool)
-	privateRoutes := builder.BuildPrivateRoutes(db, redisDB, encryptTool)
+	publicRoutes := builder.BuildPublicRoutes(db, redisDB, entityCfg, encryptTool)
+	privateRoutes := builder.BuildPrivateRoutes(db, redisDB, encryptTool, entityCfg)
 
 	// Initialize and run the server
 	srv := server.NewServer("app", publicRoutes, privateRoutes)

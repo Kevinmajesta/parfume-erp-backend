@@ -7,15 +7,16 @@ type Rfqs struct {
 	OrderDate string        `json:"order_date" gorm:"column:order_date"`
 	VendorId  string        `json:"id_vendor" gorm:"column:id_vendor"`
 	Status    string        `json:"status"`
-	Products  []RfqsProduct `json:"products" gorm:"foreignKey:id_product"` // Gunakan foreignKey
+	Products  []RfqsProduct `json:"products" gorm:"foreignKey:RfqId;references:RfqId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;joinTableForeignKey:id_rfq;table:rfqs_products"`
 	Auditable
 }
+
 
 type RfqsProduct struct {
 	RfqsProductId string `json:"id_rfqproduct" gorm:"column:id_rfqproduct"`
 	ProductId     string `json:"id_product" gorm:"column:id_product"`
 	RfqId         string `json:"id_rfq" gorm:"column:id_rfq"`
-	VendorId      string `json:"id_vendor" gorm:"column:id_vendor"` 
+	VendorId      string `json:"id_vendor" gorm:"column:id_vendor"`
 	ProductName   string `json:"productname" gorm:"column:productname"`
 	Quantity      string `json:"quantity" gorm:"column:quantity"`
 	UnitPrice     string `json:"unitprice" gorm:"column:unitprice"`

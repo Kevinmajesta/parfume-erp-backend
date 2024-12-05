@@ -336,6 +336,17 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: vendorHandler.DeleteVendor,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/vendors",
+			Handler: vendorHandler.FindAllVendor,
+			Roles:   allRoles,
+		},		{
+			Method:  http.MethodGet,
+			Path:    "/vendor/:id_vendor",
+			Handler: vendorHandler.GetVendorProfile,
+			Roles:   allRoles,
+		},
 		//RFQ
 		{
 			Method:  http.MethodPost,
@@ -347,6 +358,36 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodPut,
 			Path:    "/rfq",
 			Handler: rfqHandler.UpdateRfq,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/rfq/status",
+			Handler: rfqHandler.UpdateRfqStatus,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/rfq/all/rfq",
+			Handler: rfqHandler.FindAllRfq,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/rfq/all/bill",
+			Handler: rfqHandler.FindAllRfqBill,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/rfq/:id_rfq",
+			Handler: rfqHandler.GetRfqOverview,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/rfq/email/:id_vendor",
+			Handler: rfqHandler.GetVendorEmailById,
 			Roles:   allRoles,
 		},
 	}

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
@@ -155,4 +156,106 @@ func (h *RfqHandler) UpdateRfq(c echo.Context) error {
 		},
 		DataBom: *result,
 	})
+}
+
+func (h *RfqHandler) UpdateRfqStatus(c echo.Context) error {
+	var input binder.UpdateRfqStatusRequest
+
+	// Bind the input
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Input binding error"))
+	}
+
+	// Validate input
+	if err := c.Validate(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Validation Error: "+err.Error()))
+	}
+
+	// Call service to update the manufacture order status
+	updatedMo, err := h.rfqService.UpdateRfqStatus(input.RfqId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
+	}
+
+	// Return the updated manufacture order
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Successfully updated RFQ status", updatedMo))
+}
+
+func (h *RfqHandler) FindAllRfq(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	boms, err := h.rfqService.FindAllRfq(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data RFQ's", boms))
+}
+
+func (h *RfqHandler) FindAllRfqBill(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	boms, err := h.rfqService.FindAllRfqBill(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data RFQ's", boms))
+}
+
+func (h *RfqHandler) GetRfqOverview(c echo.Context) error {
+	rfqId := c.Param("id_rfq")
+
+	if rfqId == "" {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponseBom(http.StatusBadRequest, "RFQ ID cannot be empty"))
+	}
+
+	overview, err := h.rfqService.CalculateOverview(rfqId)
+	if err != nil {
+		if err.Error() == "RFQ not found" {
+			return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, err.Error()))
+		}
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.BOMResponse{
+		Meta: response.Meta{
+			Code:    200,
+			Message: "RFQ overview retrieved successfully",
+		},
+		DataBom: overview,
+	})
+}
+
+// In handler/rfq_handler.go
+
+func (h *RfqHandler) GetVendorEmailById(c echo.Context) error {
+	// Mendapatkan vendorId dari parameter URL
+	vendorId := c.Param("id_vendor")
+
+	// Panggil service untuk mengecek apakah email ada untuk vendorId ini
+	email, err := h.rfqService.GetEmailByVendorId(vendorId)
+	if err != nil {
+		// Jika email tidak ditemukan atau ada error, kirimkan response error
+		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+	}
+
+	// Setelah email ditemukan, dapatkan RFQ ID dari parameter query (atau URL) untuk dikirimkan
+	rfqId := c.QueryParam("rfq_id")
+
+	// Panggil service untuk mengirimkan email RFQ
+	err = h.rfqService.SendRfqEmail(rfqId, email)
+	if err != nil {
+		// Jika terjadi kesalahan dalam mengirimkan email, kirimkan response error
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	// Jika berhasil mengirimkan email, kirimkan response sukses
+	return c.JSON(http.StatusOK, map[string]string{"message": "RFQ email successfully sent"})
 }

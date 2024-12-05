@@ -297,27 +297,25 @@ func (s *materialService) GetMaterialByID(materialId string) (*entity.Materials,
 }
 
 func (s *materialService) ReduceMaterialQty(input entity.Materials) (*entity.Materials, error) {
-    // Fetch material by ID
-    material, err := s.materialRepository.FindMaterialByID(input.MaterialId)
-    if err != nil {
-        return nil, errors.New("material not found")
-    }
+	// Fetch material by ID
+	material, err := s.materialRepository.FindMaterialByName(input.MaterialId)
+	if err != nil {
+		return nil, errors.New("material not found")
+	}
 
-    // Check if there's enough quantity
-    if material.Qty < input.Qty {
-        return nil, errors.New("insufficient quantity")
-    }
+	// Check if there's enough quantity
+	if material.Qty < input.Qty {
+		return nil, errors.New("insufficient quantity")
+	}
 
-    // Reduce the quantity
-    material.Qty -= input.Qty // This works as both are float64
+	// Reduce the quantity
+	material.Qty -= input.Qty // This works as both are float64
 
-    // Update material in database
-    err = s.materialRepository.Update(material)
-    if err != nil {
-        return nil, errors.New("failed to update material")
-    }
+	// Update material in database
+	err = s.materialRepository.Update(material)
+	if err != nil {
+		return nil, errors.New("failed to update material")
+	}
 
-    return material, nil
+	return material, nil
 }
-
-

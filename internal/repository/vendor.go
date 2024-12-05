@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/pkg/cache"
@@ -16,6 +19,7 @@ type VendorRepository interface {
 	UpdateVendor(vendor *entity.Vendors) (*entity.Vendors, error)
 	FindVendorByID(vendorId string) (*entity.Vendors, error)
 	DeleteVendor(vendor *entity.Vendors) (bool, error)
+	FindAllVendor(page int) ([]entity.Vendors, error)
 }
 
 type vendorRepository struct {
@@ -102,4 +106,29 @@ func (r *vendorRepository) DeleteVendor(vendor *entity.Vendors) (bool, error) {
 	}
 	r.cacheable.Delete("FindAllVendors_page_1")
 	return true, nil
+}
+
+func (r *vendorRepository) FindAllVendor(page int) ([]entity.Vendors, error) {
+	var Vendors []entity.Vendors
+	key := fmt.Sprintf("FindAllVendors_page_%d", page)
+	const pageSize = 100
+
+	data, _ := r.cacheable.Get(key)
+	if data == "" {
+		offset := (page - 1) * pageSize
+		if err := r.db.Limit(pageSize).Offset(offset).Find(&Vendors).Error; err != nil {
+			return Vendors, err
+		}
+		marshalledVendors, _ := json.Marshal(Vendors)
+		err := r.cacheable.Set(key, marshalledVendors, 5*time.Minute)
+		if err != nil {
+			return Vendors, err
+		}
+	} else {
+		err := json.Unmarshal([]byte(data), &Vendors)
+		if err != nil {
+			return Vendors, err
+		}
+	}
+	return Vendors, nil
 }

@@ -12,6 +12,11 @@ type Vendors struct {
 	Phone      string `json:"phone"`
 	Email      string `json:"email"`
 	Website    string `json:"website"`
+	Status     string `json:"status"`
+	State      string `json:"state"`
+	City       string `json:"city"`
+	Zip        string `json:"zip"`
+	Country    string `json:"country"`
 	Auditable
 }
 
@@ -28,7 +33,7 @@ func generateVendorId(lastId string) string {
 }
 
 func NewVendor(lastId, vendorname, addressone,
-	addresstwo, phone, email, website string) *Vendors {
+	addresstwo, phone, email, website, status, state, city, zip, country string) *Vendors {
 	return &Vendors{
 		VendorId:   generateVendorId(lastId),
 		Vendorname: vendorname,
@@ -37,12 +42,17 @@ func NewVendor(lastId, vendorname, addressone,
 		Phone:      phone,
 		Email:      email,
 		Website:    website,
+		Status:     status,
+		State:      state,
+		City:       city,
+		Zip:        zip,
+		Country:    country,
 		Auditable:  NewAuditable(),
 	}
 }
 
 func UpdateVendor(id_vendor, vendorname, addressone,
-	addresstwo, phone, email, website string) *Vendors {
+	addresstwo, phone, email, website, status, state, city, zip, country string) *Vendors {
 	return &Vendors{
 		VendorId:   id_vendor,
 		Vendorname: vendorname,
@@ -51,6 +61,11 @@ func UpdateVendor(id_vendor, vendorname, addressone,
 		Phone:      phone,
 		Email:      email,
 		Website:    website,
+		Status:     status,
+		State:      state,
+		City:       city,
+		Zip:        zip,
+		Country:    country,
 		Auditable:  UpdateAuditable(),
 	}
 }

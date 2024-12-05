@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/http/binder"
@@ -34,6 +35,11 @@ func (h *VendorHandler) CreateVendor(c echo.Context) error {
 		Phone:      input.Phone,
 		Email:      input.Email,
 		Website:    input.Website,
+		Status:     input.Status,
+		Zip:        input.Zip,
+		City:       input.City,
+		Country:    input.Country,
+		State:      input.State,
 	}
 
 	// Panggil service untuk membuat produk baru
@@ -64,7 +70,7 @@ func (h *VendorHandler) UpdateVendor(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, response.ErrorResponse(http.StatusNotFound, "vendor ID does not exist"))
 	}
 
-	inputUser := entity.UpdateVendor(input.VendorId, input.Vendorname, input.Addressone, input.Addresstwo, input.Phone, input.Email, input.Website)
+	inputUser := entity.UpdateVendor(input.VendorId, input.Vendorname, input.Addressone, input.Addresstwo, input.Phone, input.Email, input.Website, input.Status, input.State, input.Zip, input.Country, input.City)
 
 	updatedProduk, err := h.vendorService.UpdateVendor(inputUser)
 	if err != nil {
@@ -87,4 +93,29 @@ func (h *VendorHandler) DeleteVendor(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "sukses delete vendor", isDeleted))
+}
+
+func (h *VendorHandler) FindAllVendor(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1 // default page if page parameter is invalid
+	}
+
+	materials, err := h.vendorService.FindAllVendor(page)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success show data Vendors", materials))
+}
+
+func (h *VendorHandler) GetVendorProfile(c echo.Context) error {
+	material_ID := c.Param("id_vendor")
+
+	material, err := h.vendorService.FindVendorByID(material_ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, "Failed to get vendor"))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays vendor data", material))
 }

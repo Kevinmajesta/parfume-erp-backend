@@ -13,6 +13,8 @@ type VendorService interface {
 	UpdateVendor(vendor *entity.Vendors) (*entity.Vendors, error)
 	FindVendorByID(vendorId string) (*entity.Vendors, error)
 	DeleteVendor(vendorId string) (bool, error)
+	FindVendorBy(materialId string) (*entity.Vendors, error)
+	FindAllVendor(page int) ([]entity.Vendors, error)
 }
 
 type vendorService struct {
@@ -51,7 +53,7 @@ func (s *vendorService) CreateVendor(vendor *entity.Vendors) (*entity.Vendors, e
 	}
 
 	// Buat produk baru dengan ID yang di-generate
-	newVendor := entity.NewVendor(lastId, vendor.Vendorname, vendor.Addressone, vendor.Addresstwo, vendor.Phone, vendor.Email, vendor.Website)
+	newVendor := entity.NewVendor(lastId, vendor.Vendorname, vendor.Addressone, vendor.Addresstwo, vendor.Phone, vendor.Email, vendor.Website, vendor.Status, vendor.Zip, vendor.City, vendor.Country, vendor.State)
 
 	// Simpan produk ke database
 	savedVendor, err := s.vendorRepository.CreateVendor(newVendor)
@@ -105,4 +107,12 @@ func (s *vendorService) DeleteVendor(vendorId string) (bool, error) {
 	}
 
 	return s.vendorRepository.DeleteVendor(vendor)
+}
+
+func (s *vendorService) FindAllVendor(page int) ([]entity.Vendors, error) {
+	return s.vendorRepository.FindAllVendor(page)
+}
+
+func (s *vendorService) FindVendorBy(materialId string) (*entity.Vendors, error) {
+	return s.vendorRepository.FindVendorByID(materialId)
 }

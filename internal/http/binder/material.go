@@ -30,9 +30,6 @@ type MaterialDeleteRequest struct {
 }
 
 type MinQtyMaterial struct {
-    MaterialId string  `json:"MaterialId" validate:"required"` // Update to match incoming JSON
-    Qty        float64 `json:"Qty" validate:"required,numeric"` // Update to match incoming JSON
+	MaterialName string  `json:"MaterialName" validate:"required"` // Update to match incoming JSON
+	Qty          float64 `json:"Qty" validate:"required,numeric"`  // Update to match incoming JSON
 }
-
-
-

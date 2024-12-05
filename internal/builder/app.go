@@ -31,7 +31,7 @@ func BuildPublicRoutes(db *gorm.DB, redisDB *redis.Client, entityCfg *entity.Con
 	return router.PublicRoutes(userHandler, adminHandler)
 }
 
-func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.EncryptTool) []*route.Route {
+func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.EncryptTool, entityCfg *entity.Config) []*route.Route {
 	cacheable := cache.NewCacheable(redisDB)
 	userRepository := repository.NewUserRepository(db, cacheable)
 	userService := service.NewUserService(userRepository, encryptTool, nil)
@@ -70,9 +70,10 @@ func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.
 	vendorService := service.NewVendorService(vendorRepository)
 	vendorHandler := handler.NewVendorHandler(vendorService)
 
+	emailService := email.NewEmailSender(entityCfg)
 	rfqRepository := repository.NewRfqRepository(db, cacheable)
 	rfqProductRepo := repository.NewRfqProductRepository(db)
-	rfqService := service.NewRfqService(rfqRepository, rfqProductRepo)
+	rfqService := service.NewRfqService(rfqRepository, rfqProductRepo, emailService)
 	rfqHandler := handler.NewRfqHandler(rfqService)
 
 	return router.PrivateRoutes(userHandler, suggestionHandler, adminHandler, schedulesHandler,

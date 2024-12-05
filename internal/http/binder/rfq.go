@@ -28,6 +28,10 @@ type ProductRequest struct {
 	Subtotal      string `json:"subtotal"`
 }
 
+type UpdateRfqStatusRequest struct {
+	RfqId string `json:"id_rfq" validate:"required"`
+}
+
 type RFQDeleteRequest struct {
 	RfqId string `param:"id_rfq" validate:"required"`
 }

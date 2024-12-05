@@ -22,6 +22,7 @@ type MaterialRepository interface {
 	FindAllMaterial(page int) ([]entity.Materials, error)
 	SearchByName(name string) ([]entity.Materials, error)
 	Update(material *entity.Materials) error
+	FindMaterialByName(materialId string) (*entity.Materials, error)
 }
 
 type materialRepository struct {
@@ -105,6 +106,7 @@ func (r *materialRepository) FindMaterialByID(materialId string) (*entity.Materi
 		return nil, err // Pastikan mengembalikan nil, err
 	}
 	log.Printf("material found: %v", material)
+	r.cacheable.Delete("FindAllMaterials_page_1")
 	return material, nil
 }
 
@@ -158,6 +160,15 @@ func (r *materialRepository) SearchByName(name string) ([]entity.Materials, erro
 func (r *materialRepository) Update(material *entity.Materials) error {
 	r.cacheable.Delete("FindAllMaterials_page_1")
 	return r.db.Save(material).Error
-	
+
 }
 
+func (r *materialRepository) FindMaterialByName(materialId string) (*entity.Materials, error) {
+	material := new(entity.Materials)
+	if err := r.db.Where("materialname = ?", materialId).First(material).Error; err != nil {
+		log.Printf("Error finding material by Name: %v", err)
+		return nil, err // Pastikan mengembalikan nil, err
+	}
+	log.Printf("material found: %v", material)
+	return material, nil
+}
