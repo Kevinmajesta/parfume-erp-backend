@@ -79,7 +79,7 @@ func (r *rfqProductRepository) GetProductByRfqIdAndProductId(rfqId, productId st
 
 func (r *rfqProductRepository) GetProductDetails(materialId string) (*entity.Materials, error) {
 	var product entity.Materials
-	if err := r.db.Table("material").Where("id_material = ?", materialId).First(&product).Error; err != nil {
+	if err := r.db.Table("materials").Where("id_material = ?", materialId).First(&product).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil

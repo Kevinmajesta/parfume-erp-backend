@@ -390,5 +390,11 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: rfqHandler.GetVendorEmailById,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/rfq/:id_rfq",
+			Handler: rfqHandler.DeleteRfq,
+			Roles:   allRoles,
+		},
 	}
 }

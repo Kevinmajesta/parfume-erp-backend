@@ -259,3 +259,18 @@ func (h *RfqHandler) GetVendorEmailById(c echo.Context) error {
 	// Jika berhasil mengirimkan email, kirimkan response sukses
 	return c.JSON(http.StatusOK, map[string]string{"message": "RFQ email successfully sent"})
 }
+
+func (h *RfqHandler) DeleteRfq(c echo.Context) error {
+	var input binder.RFQDeleteRequest
+
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "ada kesalahan input"))
+	}
+
+	isDeleted, err := h.rfqService.DeleteRFQ(input.RfqId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "sukses delete RFQ", isDeleted))
+}

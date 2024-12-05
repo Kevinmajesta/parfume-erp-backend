@@ -20,8 +20,9 @@ type RfqService interface {
 	FindAllRfq(page int) ([]entity.Rfqs, error)
 	FindAllRfqBill(page int) ([]entity.Rfqs, error)
 	CalculateOverview(rfqId string) (map[string]interface{}, error)
-	GetEmailByVendorId(vendorId string) (string, error) 
+	GetEmailByVendorId(vendorId string) (string, error)
 	SendRfqEmail(rfqId string, recipientEmail string) error
+	DeleteRFQ(MoId string) (bool, error)
 }
 
 type rfqService struct {
@@ -326,12 +327,12 @@ func (s *rfqService) SendRfqEmail(rfqId string, recipientEmail string) error {
 
 	// Kirim email menggunakan service email (pastikan sudah diinisialisasi)
 	err = s.emailSender.SendRfqEmail(
-		recipientEmail,                      // Pass the email recipient as string
-		rfq.RfqId,                           // RFQ ID
-		rfq.VendorId,                        // Vendor ID
-		rfq.OrderDate,                       // Order Date
-		rfq.Status,                          // Status
-		rfq.Products,                        // List of products
+		recipientEmail, // Pass the email recipient as string
+		rfq.RfqId,      // RFQ ID
+		rfq.VendorId,   // Vendor ID
+		rfq.OrderDate,  // Order Date
+		rfq.Status,     // Status
+		rfq.Products,   // List of products
 	)
 	if err != nil {
 		return fmt.Errorf("failed to send RFQ email: %v", err)
@@ -340,4 +341,11 @@ func (s *rfqService) SendRfqEmail(rfqId string, recipientEmail string) error {
 	return nil
 }
 
+func (s *rfqService) DeleteRFQ(MoId string) (bool, error) {
+	material, err := s.rfqRepository.GetRfqById(MoId)
+	if err != nil {
+		return false, err
+	}
 
+	return s.rfqRepository.DeleteRfq(material)
+}
