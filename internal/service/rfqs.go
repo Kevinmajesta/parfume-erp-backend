@@ -208,9 +208,9 @@ func (s *rfqService) FindRfqById(rfqId string) (*entity.Rfqs, error) {
 	return rfq, nil
 }
 
-func (s *rfqService) UpdateRfqStatus(moId string) (*entity.Rfqs, error) {
+func (s *rfqService) UpdateRfqStatus(rfqId string) (*entity.Rfqs, error) {
 	// Fetch the existing Manufacture Order
-	mo, err := s.rfqRepository.GetRfqById(moId)
+	mo, err := s.rfqRepository.GetRfqById(rfqId)
 	if err != nil {
 		return nil, errors.New("RFQ not found")
 	}

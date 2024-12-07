@@ -86,7 +86,7 @@ func (r *vendorRepository) UpdateVendor(vendor *entity.Vendors) (*entity.Vendors
 	if err := r.db.Model(vendor).Where("id_vendor = ?", vendor.VendorId).Updates(fields).Error; err != nil {
 		return vendor, err
 	}
-	r.cacheable.Delete("FindAllPVendors_page_1")
+	r.cacheable.Delete("FindAllVendors_page_1")
 
 	return vendor, nil
 }

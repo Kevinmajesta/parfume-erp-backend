@@ -99,9 +99,17 @@ func (r *rfqRepository) GetRfqById(rfqId string) (*entity.Rfqs, error) {
 }
 
 func (r *rfqRepository) UpdateRfqStatus(rfq *entity.Rfqs) (*entity.Rfqs, error) {
-	if err := r.db.Save(rfq).Error; err != nil {
+	if err := r.db.Model(&entity.Rfqs{}).
+		Where("id_rfq = ?", rfq.RfqId).
+		Updates(map[string]interface{}{
+			"order_date": rfq.OrderDate,
+			"id_vendor":  rfq.VendorId,
+			"status":     rfq.Status,
+			"updated_at": rfq.UpdatedAt,
+		}).Error; err != nil {
 		return nil, err
 	}
+
 	r.cacheable.Delete("FindAllRfq_page_1")
 	r.cacheable.Delete("FindAllRfqBill_page_1")
 	return rfq, nil

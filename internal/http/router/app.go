@@ -45,7 +45,8 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
 	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler,
-	bomHandler handler.BOMHandler, moHandler handler.MoHandler, vendorHandler handler.VendorHandler, rfqHandler handler.RfqHandler) []*route.Route {
+	bomHandler handler.BOMHandler, moHandler handler.MoHandler, vendorHandler handler.VendorHandler, rfqHandler handler.RfqHandler,
+	costumerHandler handler.CostumerHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -341,7 +342,7 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Path:    "/vendors",
 			Handler: vendorHandler.FindAllVendor,
 			Roles:   allRoles,
-		},		{
+		}, {
 			Method:  http.MethodGet,
 			Path:    "/vendor/:id_vendor",
 			Handler: vendorHandler.GetVendorProfile,
@@ -394,6 +395,37 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodDelete,
 			Path:    "/rfq/:id_rfq",
 			Handler: rfqHandler.DeleteRfq,
+			Roles:   allRoles,
+		},
+		//costumer
+		{
+			Method:  http.MethodPost,
+			Path:    "/costumer",
+			Handler: costumerHandler.CreateCostumer,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/costumer/:id_costumer",
+			Handler: costumerHandler.UpdateCostumer,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/costumer/:id_costumer",
+			Handler: costumerHandler.DeleteCostumer,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/costumers",
+			Handler: costumerHandler.FindAllCostumer,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/costumer/:id_costumer",
+			Handler: costumerHandler.GetCostumerProfile,
 			Roles:   allRoles,
 		},
 	}
