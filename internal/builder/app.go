@@ -33,6 +33,7 @@ func BuildPublicRoutes(db *gorm.DB, redisDB *redis.Client, entityCfg *entity.Con
 
 func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.EncryptTool, entityCfg *entity.Config) []*route.Route {
 	cacheable := cache.NewCacheable(redisDB)
+	emailService := email.NewEmailSender(entityCfg)
 	userRepository := repository.NewUserRepository(db, cacheable)
 	userService := service.NewUserService(userRepository, encryptTool, nil)
 	userHandler := handler.NewUserHandler(userService)
@@ -70,7 +71,6 @@ func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.
 	vendorService := service.NewVendorService(vendorRepository)
 	vendorHandler := handler.NewVendorHandler(vendorService)
 
-	emailService := email.NewEmailSender(entityCfg)
 	rfqRepository := repository.NewRfqRepository(db, cacheable)
 	rfqProductRepo := repository.NewRfqProductRepository(db)
 	rfqService := service.NewRfqService(rfqRepository, rfqProductRepo, emailService)
@@ -80,6 +80,11 @@ func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.
 	costumerService := service.NewCostumerService(costumerRepository)
 	costumerHandler := handler.NewCostumerHandler(costumerService)
 
+	quoRepository := repository.NewQuoRepository(db, cacheable)
+	quoProductRepo := repository.NewQuoProductRepository(db)
+	quoService := service.NewQuoService(quoRepository, quoProductRepo, emailService)
+	quoHandler := handler.NewQuoHandler(quoService)
+
 	return router.PrivateRoutes(userHandler, suggestionHandler, adminHandler, schedulesHandler,
-		productHandler, materialHandler, *bomHandler, moHandler, vendorHandler, rfqHandler, costumerHandler)
+		productHandler, materialHandler, *bomHandler, moHandler, vendorHandler, rfqHandler, costumerHandler, quoHandler)
 }
