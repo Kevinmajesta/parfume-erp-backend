@@ -441,5 +441,41 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: quoHandler.UpdateQuo,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/quotation/:id_quotation",
+			Handler: quoHandler.DeleteRfq,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/quotation/all/quo",
+			Handler: quoHandler.FindAllQuo,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/quotation/all/bill",
+			Handler: quoHandler.FindAllQuoBill,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/quotation/status/:id_quotation",
+			Handler: quoHandler.UpdateQuoStatus,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/quotation/overview/:id_quotation",
+			Handler: quoHandler.GetQuoOverview,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/quotation/email/:id_costumer",
+			Handler: quoHandler.GetCostumerEmailById,
+			Roles:   allRoles,
+		},
 	}
 }

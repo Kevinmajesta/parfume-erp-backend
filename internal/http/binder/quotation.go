@@ -29,7 +29,7 @@ type QUOProductRequest struct {
 }
 
 type UpdateQuoStatusRequest struct {
-	QuotationsId string `json:"id_quotation" validate:"required"`
+	QuotationsId string `param:"id_quotation" validate:"required"`
 }
 
 type QuoDeleteRequest struct {

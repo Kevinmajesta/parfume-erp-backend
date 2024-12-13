@@ -233,8 +233,6 @@ func (h *RfqHandler) GetRfqOverview(c echo.Context) error {
 	})
 }
 
-// In handler/rfq_handler.go
-
 func (h *RfqHandler) GetVendorEmailById(c echo.Context) error {
 	// Mendapatkan vendorId dari parameter URL
 	vendorId := c.Param("id_vendor")

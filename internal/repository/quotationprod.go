@@ -12,6 +12,7 @@ type QuoProductRepository interface {
 	GetProductByQuoIdAndProductId(rfqId, productId string) (*entity.QuotationsProduct, error)
 	CheckMaterialExists(materialId string) (bool, error)
 	UpdateProduct(product *entity.QuotationsProduct) (*entity.QuotationsProduct, error)
+	GetProductDetails(materialId string) (*entity.Products, error)
 }
 
 type quoProductRepository struct {
@@ -70,4 +71,12 @@ func (r *quoProductRepository) UpdateProduct(product *entity.QuotationsProduct) 
 		return nil, err
 	}
 	return product, nil
+}
+
+func (r *quoProductRepository) GetProductDetails(materialId string) (*entity.Products, error) {
+	var product entity.Products
+	if err := r.db.Table("products").Where("id_product = ?", materialId).First(&product).Error; err != nil {
+		return nil, err
+	}
+	return &product, nil
 }
