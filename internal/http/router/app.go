@@ -46,7 +46,7 @@ func PublicRoutes(userHandler handler.UserHandler, adminHandler handler.AdminHan
 func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.SuggestionHandler, adminHandler handler.AdminHandler,
 	schedulesHandler handler.SchedulesHandler, productHandler handler.ProductHandler, materialHandler handler.MaterialHandler,
 	bomHandler handler.BOMHandler, moHandler handler.MoHandler, vendorHandler handler.VendorHandler, rfqHandler handler.RfqHandler,
-	costumerHandler handler.CostumerHandler, quoHandler handler.QuoHandler) []*route.Route {
+	costumerHandler handler.CostumerHandler, quoHandler handler.QuoHandler, billrfqHandler handler.BillrfqHandler) []*route.Route {
 	return []*route.Route{
 		//user
 		{
@@ -248,6 +248,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 		},
 		{
 			Method:  http.MethodPost,
+			Path:    "/material/increasemat",
+			Handler: materialHandler.IncreaseMaterialQty,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
 			Path:    "/bom",
 			Handler: bomHandler.CreateBOM,
 			Roles:   allRoles,
@@ -318,6 +324,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: moHandler.DeleteMo,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/mo/:id_mo/pdf",
+			Handler: moHandler.DownloadMOPDF,
+			Roles:   allRoles,
+		},
 		//vendor
 		{
 			Method:  http.MethodPost,
@@ -342,10 +354,17 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Path:    "/vendors",
 			Handler: vendorHandler.FindAllVendor,
 			Roles:   allRoles,
-		}, {
+		},
+		 {
 			Method:  http.MethodGet,
 			Path:    "/vendor/:id_vendor",
 			Handler: vendorHandler.GetVendorProfile,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/vendor/:id_vendor/pdf",
+			Handler: vendorHandler.DownloadVendorPDF,
 			Roles:   allRoles,
 		},
 		//RFQ
@@ -395,6 +414,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodDelete,
 			Path:    "/rfq/:id_rfq",
 			Handler: rfqHandler.DeleteRfq,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/rfq/:id_rfq/pdf",
+			Handler: rfqHandler.HandleCreateRfqPDF,
 			Roles:   allRoles,
 		},
 		//costumer
@@ -475,6 +500,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodGet,
 			Path:    "/quotation/email/:id_costumer",
 			Handler: quoHandler.GetCostumerEmailById,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/billrfq",
+			Handler: billrfqHandler.CreateMo,
 			Roles:   allRoles,
 		},
 	}

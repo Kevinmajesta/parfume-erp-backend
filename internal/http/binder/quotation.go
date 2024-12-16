@@ -5,6 +5,7 @@ type QUOCreateRequest struct {
 	OrderDate    string           `json:"order_date"`
 	Status       string           `json:"status"`
 	CostumerId   string           `json:"id_costumer"`
+	Payment      string           `json:"payment"`
 	Products     []ProductRequest `json:"products"`
 }
 
@@ -14,6 +15,7 @@ type QUOUpdateRequest struct {
 	OrderDate    string              `json:"order_date"`
 	CostumerId   string              `json:"id_costumer"`
 	Status       string              `json:"status"`
+	Payment      string              `json:"payment"`
 	Products     []QUOProductRequest `json:"products"`
 }
 

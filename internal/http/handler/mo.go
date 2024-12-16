@@ -97,3 +97,44 @@ func (h *MoHandler) DeleteMo(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "sukses delete Mo", isDeleted))
 }
+
+func (h *MoHandler) DownloadMOPDF(c echo.Context) error {
+	// Retrieve MO ID from the URL parameter (e.g., /mo/:moId)
+	moId := c.Param("id_mo")
+
+	if moId == "" {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "MO ID cannot be empty",
+		})
+	}
+
+	// Fetch the Manufacturing Order (MO) details from the repository using MO ID
+	mo, err := h.moService.GetMoByID(moId)
+	if err != nil {
+		// If the MO is not found, return an error response
+		if err.Error() == "MO not found" {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+
+	// Generate the PDF using the GenerateMOPDF method
+	pdfData, err := h.moService.GenerateMOPDF(mo)
+	if err != nil {
+		// If an error occurs while generating the PDF, return an internal server error
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error generating PDF",
+		})
+	}
+
+	// Serve the PDF to the client
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=mo_"+mo.MoId+".pdf")
+	c.Response().Write(pdfData)
+
+	return nil
+}

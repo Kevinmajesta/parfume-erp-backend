@@ -7,6 +7,7 @@ type Quotations struct {
 	OrderDate    string              `json:"order_date" gorm:"column:order_date"`
 	CostumerId   string              `json:"id_costumer" gorm:"column:id_costumer"`
 	Status       string              `json:"status"`
+	Payment      string              `json:"payment"`
 	Products     []QuotationsProduct `json:"products" gorm:"foreignKey:QuotationsId;references:QuotationsId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;joinTableForeignKey:QuotationsId;table:quotations_products"`
 	Auditable
 }
@@ -36,17 +37,18 @@ func generateQuoId(lastId string) string {
 	return fmt.Sprintf("QUO-%05d", newNumber)
 }
 
-func NewQuo(lastId, order_date, status, CostumerId string) *Quotations {
+func NewQuo(lastId, order_date, status, CostumerId, payment string) *Quotations {
 	return &Quotations{
 		QuotationsId: generateQuoId(lastId),
 		OrderDate:    order_date,
 		CostumerId:   CostumerId,
 		Status:       "QUOTATION",
+		Payment:      payment,
 		Auditable:    NewAuditable(),
 	}
 }
 
-func UpdateQuo(id_quotation, order_date, newStatus, CostumerId string, currentStatus string) *Quotations {
+func UpdateQuo(id_quotation, order_date, newStatus, CostumerId, payment string, currentStatus string) *Quotations {
 	// Jika status baru kosong, gunakan status lama
 	status := currentStatus
 	if newStatus != "" {
@@ -58,6 +60,7 @@ func UpdateQuo(id_quotation, order_date, newStatus, CostumerId string, currentSt
 		CostumerId:   CostumerId,
 		OrderDate:    order_date,
 		Status:       status,
+		Payment:      payment,
 		Auditable:    UpdateAuditable(),
 	}
 }

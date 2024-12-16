@@ -1,0 +1,13 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS billrfqs (
+    id_bill VARCHAR(255) PRIMARY KEY NOT NULL,
+    id_vendor VARCHAR(255) NOT NULL,
+    bill_date TIMESTAMPTZ NOT NULL,
+    payment VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at TIMESTAMPTZ
+);
+
+COMMIT;

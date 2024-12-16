@@ -133,7 +133,7 @@ func (r *quoRepository) FindAllQuoBill(page int) ([]entity.Quotations, error) {
 	data, _ := r.cacheable.Get(key)
 	if data == "" {
 		offset := (page - 1) * pageSize
-		if err := r.db.Where("status IN ?", []string{"Invoiced", "Delivery", "Done"}).
+		if err := r.db.Where("status IN ?", []string{"Sales Order", "Invoiced", "Delivery", "Done"}).
 			Limit(pageSize).
 			Offset(offset).
 			Find(&Rfq).Error; err != nil {
@@ -150,6 +150,7 @@ func (r *quoRepository) FindAllQuoBill(page int) ([]entity.Quotations, error) {
 			return Rfq, err
 		}
 	}
+	r.cacheable.Delete("FindAllQuo_page_1")
 	r.cacheable.Delete("FindAllQuoBill_page_1")
 	return Rfq, nil
 }

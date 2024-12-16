@@ -241,44 +241,75 @@ func (s *bomService) CalculateOverview(bomId string) (map[string]interface{}, er
 
 func (s *bomService) GenerateBOMPDF(overview map[string]interface{}) ([]byte, error) {
 	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 20, 15)
 	pdf.AddPage()
 
-	// Set font
+	// Set a simple header
 	pdf.SetFont("Arial", "B", 16)
-	pdf.Cell(40, 10, "BOM Overview")
+	pdf.CellFormat(0, 12, "BOM Overview", "0", 1, "C", false, 0, "")
 	pdf.Ln(10)
 
+	// Reset text color and font
+	pdf.SetTextColor(0, 0, 0)
 	pdf.SetFont("Arial", "", 12)
 
 	// Add BOM ID and product name
-	pdf.Cell(40, 10, "BOM ID: "+overview["bom_id"].(string))
-	pdf.Ln(5)
-	pdf.Cell(40, 10, "Product Name: "+overview["product_name"].(string))
-	pdf.Ln(10)
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "BOM ID:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, overview["bom_id"].(string))
+	pdf.Ln(8)
 
-	// Add product details
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Product Name:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, overview["product_name"].(string))
+	pdf.Ln(12)
+
+	// Add product details section
 	productDetails := overview["product_details"].(map[string]interface{})
-	pdf.Cell(40, 10, "Make Price: "+productDetails["make_price"].(string))
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Make Price:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, productDetails["make_price"].(string))
 	pdf.Ln(5)
-	pdf.Cell(40, 10, "Sell Price: "+productDetails["sell_price"].(string))
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Sell Price:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, productDetails["sell_price"].(string))
+	pdf.Ln(12)
+
+	// Materials Table Header with subtle styling
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(70, 10, "Material")
+	pdf.Cell(30, 10, "Quantity")
+	pdf.Cell(50, 10, "Product Cost")
+	pdf.Cell(50, 10, "BOM Cost")
 	pdf.Ln(10)
 
-	// Add materials details
-	pdf.Cell(40, 10, "Materials:")
-	pdf.Ln(5)
-
+	// Materials Table Rows with basic formatting
+	pdf.SetFont("Arial", "", 12)
 	materials := overview["materials"].([]map[string]interface{})
 	for _, material := range materials {
-		pdf.Cell(40, 10, material["material"].(string))
-		pdf.Cell(40, 10, "Quantity: "+material["quantity"].(string))
-		pdf.Cell(55, 10, "Product Cost: "+material["product_cost"].(string))
-		pdf.Cell(40, 10, "BOM Cost: "+material["bom_cost"].(string))
-		pdf.Ln(5)
+		pdf.Cell(70, 10, material["material"].(string))
+		pdf.Cell(30, 10, material["quantity"].(string))
+		pdf.Cell(50, 10, material["product_cost"].(string))
+		pdf.Cell(50, 10, material["bom_cost"].(string))
+		pdf.Ln(10)
 	}
 
-	// Add total cost
+	// Add a line separator after materials
+	pdf.Ln(5)
+	pdf.Cell(0, 1, "")
 	pdf.Ln(10)
-	pdf.Cell(40, 10, "Total Cost: "+overview["total_cost"].(string))
+
+	// Total Cost Section
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Total Cost:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, overview["total_cost"].(string))
+	pdf.Ln(15)
 
 	// Output PDF to buffer
 	var buf bytes.Buffer

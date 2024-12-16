@@ -64,7 +64,7 @@ func (h *QuoHandler) CreateRfq(c echo.Context) error {
 	}
 
 	// Buat RFQ baru
-	newRfq := entity.NewQuo("", input.OrderDate, input.Status, input.CostumerId)
+	newRfq := entity.NewQuo("", input.OrderDate, input.Status, input.CostumerId, input.Payment)
 
 	// Proses produk dan tambahkan VendorId dari input
 	var products []entity.QuotationsProduct
@@ -124,6 +124,7 @@ func (h *QuoHandler) UpdateQuo(c echo.Context) error {
 		input.OrderDate,
 		input.Status, // Status baru (kosong jika tidak diubah)
 		input.CostumerId,
+		input.Payment,
 		existingRfq.Status, // Status lama
 	)
 

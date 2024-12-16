@@ -153,7 +153,7 @@ func (r *rfqRepository) FindAllRfqBill(page int) ([]entity.Rfqs, error) {
 	data, _ := r.cacheable.Get(key)
 	if data == "" {
 		offset := (page - 1) * pageSize
-		if err := r.db.Where("status IN ?", []string{"Recived", "Billed", "Done"}).
+		if err := r.db.Where("status IN ?", []string{"Recived", "Billed", "Done", "Purchase Order"}).
 			Limit(pageSize).
 			Offset(offset).
 			Find(&Rfq).Error; err != nil {

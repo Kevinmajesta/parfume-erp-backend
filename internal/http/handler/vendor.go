@@ -119,3 +119,41 @@ func (h *VendorHandler) GetVendorProfile(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays vendor data", material))
 }
+
+func (h *VendorHandler) DownloadVendorPDF(c echo.Context) error {
+	vendorId := c.Param("id_vendor")
+
+	if vendorId == "" {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Vendor ID cannot be empty",
+		})
+	}
+
+	// Fetch the vendor details from the service
+	vendor, err := h.vendorService.FindVendorByID(vendorId)
+	if err != nil {
+		if err.Error() == "Vendor not found" {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+
+	// Generate the PDF for the vendor
+	pdfData, err := h.vendorService.CreateVendorPDF(vendor)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error generating PDF",
+		})
+	}
+
+	// Serve the PDF to the client
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=vendor_"+vendor.VendorId+".pdf")
+	c.Response().Write(pdfData)
+
+	return nil
+}

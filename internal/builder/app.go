@@ -80,11 +80,15 @@ func BuildPrivateRoutes(db *gorm.DB, redisDB *redis.Client, encryptTool encrypt.
 	costumerService := service.NewCostumerService(costumerRepository)
 	costumerHandler := handler.NewCostumerHandler(costumerService)
 
+	billrfqRepository := repository.NewBillrfqRepository(db, cacheable)
+	billrfqService := service.NewBillrfqService(billrfqRepository)
+	billrfqHandler := handler.NewBillrfqHandler(billrfqService)
+
 	quoRepository := repository.NewQuoRepository(db, cacheable)
 	quoProductRepo := repository.NewQuoProductRepository(db)
 	quoService := service.NewQuoService(quoRepository, quoProductRepo, emailService)
 	quoHandler := handler.NewQuoHandler(quoService)
 
 	return router.PrivateRoutes(userHandler, suggestionHandler, adminHandler, schedulesHandler,
-		productHandler, materialHandler, *bomHandler, moHandler, vendorHandler, rfqHandler, costumerHandler, quoHandler)
+		productHandler, materialHandler, *bomHandler, moHandler, vendorHandler, rfqHandler, costumerHandler, quoHandler, billrfqHandler)
 }

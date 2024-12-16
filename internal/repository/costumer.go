@@ -19,6 +19,7 @@ type CostumerRepository interface {
 	UpdateCostumer(vendor *entity.Costumers) (*entity.Costumers, error)
 	DeleteCostumer(vendor *entity.Costumers) (bool, error)
 	FindCostumerByID(vendorId string) (*entity.Costumers, error)
+	// GetCostumerById(costumerId string) (*entity.Costumers, error)
 	FindAllCostumer(page int) ([]entity.Costumers, error)
 }
 
@@ -128,3 +129,11 @@ func (r *costumerRepository) FindAllCostumer(page int) ([]entity.Costumers, erro
 	}
 	return Vendors, nil
 }
+
+// func (r *costumerRepository) GetCostumerById(costumerId string) (*entity.Costumers, error) {
+// 	var costumer entity.Costumers
+// 	if err := r.db.Where("id_costumer = ?", costumerId).First(&costumer).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return &costumer, nil // Ensure this is returning a pointer to Costumers
+// }

@@ -175,10 +175,11 @@ func (h *ProductHandler) SearchProducts(c echo.Context) error {
 }
 
 func (h *ProductHandler) DownloadProductPDF(c echo.Context) error {
+	// Ambil parameter ID produk dari URL
 	id := c.Param("id_product")
 
 	// Panggil service untuk generate PDF
-	fileName, err := h.productService.GenerateProductPDF(id)
+	fileName, err := h.productService.GenerateProductPDFWithBarcode(id)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": err.Error(),
@@ -186,7 +187,7 @@ func (h *ProductHandler) DownloadProductPDF(c echo.Context) error {
 	}
 
 	// Kirim file PDF ke client untuk di-download
-	return c.File(fileName)
+	return c.Attachment(fileName, "product_details.pdf")
 }
 
 // GenerateBarcodePDFHandler untuk mengunduh PDF barcode
@@ -227,27 +228,26 @@ func (h *ProductHandler) GetProductProfile(c echo.Context) error {
 }
 
 func (h *ProductHandler) IncreaseProductQty(c echo.Context) error {
-    var input binder.IncreaseQtyInput
-    // Bind input
-    if err := c.Bind(&input); err != nil {
-        return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to bind input"))
-    }
+	var input binder.IncreaseQtyInput
+	// Bind input
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to bind input"))
+	}
 
-    // Validate input
-    if err := c.Validate(&input); err != nil {
-        return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Validation Error: "+err.Error()))
-    }
+	// Validate input
+	if err := c.Validate(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Validation Error: "+err.Error()))
+	}
 
-    // Call service to increase product quantity
-    updatedProduct, err := h.productService.IncreaseProductQty(entity.Products{
-        ProdukId: input.ProductId,
-        Qty:      input.Qty,
-    })
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
-    }
+	// Call service to increase product quantity
+	updatedProduct, err := h.productService.IncreaseProductQty(entity.Products{
+		ProdukId: input.ProductId,
+		Qty:      input.Qty,
+	})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
+	}
 
-    // Return the updated product
-    return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Successfully increased product quantity", updatedProduct))
+	// Return the updated product
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Successfully increased product quantity", updatedProduct))
 }
-

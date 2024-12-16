@@ -1,10 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
+	"github.com/jung-kurt/gofpdf"
 )
 
 type MoService interface {
@@ -13,6 +15,7 @@ type MoService interface {
 	FindAllMos(page int) ([]entity.Mos, error)
 	GetMoByID(MoId string) (*entity.Mos, error)
 	DeleteMo(MoId string) (bool, error)
+	GenerateMOPDF(mo *entity.Mos) ([]byte, error)
 }
 
 type moService struct {
@@ -90,3 +93,60 @@ func (s *moService) DeleteMo(MoId string) (bool, error) {
 
 	return s.moRepository.DeleteMo(material)
 }
+
+func (s *moService) GenerateMOPDF(mo *entity.Mos) ([]byte, error) {
+	// Create a new PDF document
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 20, 15)
+	pdf.AddPage()
+
+	// Set Header
+	pdf.SetFont("Arial", "B", 16)
+	pdf.CellFormat(0, 12, "Manufacturing Order (MO)", "0", 1, "C", false, 0, "")
+	pdf.Ln(10)
+
+	// Reset font to normal
+	pdf.SetFont("Arial", "", 12)
+
+	// Add MO details
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "MO ID:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, mo.MoId)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Product ID:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, mo.ProductId)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "BOM ID:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, mo.BomId)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Quantity to Produce:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, mo.Qtytoproduce)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Status:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, mo.Status)
+	pdf.Ln(10)
+
+	// Output the PDF to a buffer
+	var buf bytes.Buffer
+	err := pdf.Output(&buf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the PDF as a byte slice
+	return buf.Bytes(), nil
+}
+

@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
+	"image"
+	"image/draw"
 	"image/png"
 	"log"
 	"os"
@@ -23,7 +25,7 @@ type ProductService interface {
 	DeleteProduct(productId string) (bool, error)
 	FindAllProduct(page int) ([]entity.Products, error)
 	SearchProductsByName(name string) ([]entity.Products, error)
-	GenerateProductPDF(id string) (string, error)
+	GenerateProductPDFWithBarcode(id string) (string, error)
 	GenerateBarcodePDF(id string) (string, error)
 	GenerateBarcode(id string) (string, error)
 	GenerateAllProductsPDF(page int) (string, error)
@@ -149,7 +151,7 @@ func (s *productService) SearchProductsByName(name string) ([]entity.Products, e
 	return s.productRepository.SearchByName(name)
 }
 
-func (s *productService) GenerateProductPDF(id string) (string, error) {
+func (s *productService) GenerateProductPDFWithBarcode(id string) (string, error) {
 	product, err := s.productRepository.FindProductByID(id)
 	if err != nil {
 		return "", err
@@ -171,30 +173,65 @@ func (s *productService) GenerateProductPDF(id string) (string, error) {
 		return "", fmt.Errorf("invalid tax: %v", err)
 	}
 
+	// Generate Barcode
+	barcodeFile, err := s.GenerateBarcode(id)
+	if err != nil {
+		return "", err
+	}
+
 	// Membuat PDF dengan gofpdf
 	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 20, 15)
 	pdf.AddPage()
-	pdf.SetFont("Arial", "B", 16)
-	pdf.Cell(40, 10, "Product Details")
 
-	pdf.Ln(12)
+	// Header dengan background warna
+	pdf.SetFillColor(100, 150, 255) // Warna biru muda
+	pdf.SetTextColor(255, 255, 255) // Warna putih
+	pdf.SetFont("Arial", "B", 20)
+	pdf.CellFormat(0, 12, "Product Details", "0", 1, "C", true, 0, "")
+	pdf.Ln(10)
+
+	// Reset warna teks ke hitam
+	pdf.SetTextColor(0, 0, 0)
+
+	// Informasi produk
 	pdf.SetFont("Arial", "", 12)
-	pdf.Cell(40, 10, "Product ID: "+product.ProdukId)
+	infoLabels := []string{"Product ID:", "Product Name:", "Category:", "Sell Price:", "Make Price:", "Tax:", "Description:"}
+	infoValues := []string{
+		product.ProdukId,
+		product.Productname,
+		product.Productcategory,
+		fmt.Sprintf("%.2f", sellPrice),
+		fmt.Sprintf("%.2f", makePrice),
+		fmt.Sprintf("%.2f%%", pajak),
+		product.Description,
+	}
+
+	for i := 0; i < len(infoLabels); i++ {
+		pdf.SetFont("Arial", "B", 12)
+		pdf.Cell(40, 10, infoLabels[i])
+		pdf.SetFont("Arial", "", 12)
+		pdf.MultiCell(0, 10, infoValues[i], "", "", false)
+	}
+
+	// Garis pemisah
+	pdf.Ln(5)
+	pdf.SetDrawColor(200, 200, 200) // Warna abu-abu terang
+	pdf.Line(15, pdf.GetY(), 195, pdf.GetY())
 	pdf.Ln(10)
-	pdf.Cell(40, 10, "Product Name: "+product.Productname)
+
+	// Section Barcode
+	pdf.SetFillColor(230, 230, 230) // Background abu-abu terang
+	pdf.SetFont("Arial", "B", 14)
+	pdf.CellFormat(0, 10, "Product Barcode", "0", 1, "C", true, 0, "")
 	pdf.Ln(10)
-	pdf.Cell(40, 10, "Category: "+product.Productcategory)
-	pdf.Ln(10)
-	pdf.Cell(40, 10, "Sell Price: "+fmt.Sprintf("%.2f", sellPrice))
-	pdf.Ln(10)
-	pdf.Cell(40, 10, "Make Price: "+fmt.Sprintf("%.2f", makePrice))
-	pdf.Ln(10)
-	pdf.Cell(40, 10, "Tax: "+fmt.Sprintf("%.2f%%", pajak))
-	pdf.Ln(10)
-	pdf.Cell(40, 10, "Description: "+product.Description)
+
+	// Menambahkan Barcode
+	pdf.Image(barcodeFile, 55, pdf.GetY(), 100, 40, false, "", 0, "")
+	pdf.Ln(50)
 
 	// Simpan PDF ke file
-	fileName := "product_" + product.ProdukId + ".pdf"
+	fileName := "product_with_barcode_" + product.ProdukId + ".pdf"
 	err = pdf.OutputFileAndClose(fileName)
 	if err != nil {
 		return "", err
@@ -209,14 +246,35 @@ func (s *productService) GenerateBarcode(id string) (string, error) {
 		return "", err
 	}
 
-	qrCode, _ := code93.Encode(product.ProdukId, true, true)
-	qrCode, _ = barcode.Scale(qrCode, 650, 250)
+	// Generate barcode
+	qrCode, err := code93.Encode(product.ProdukId, true, true)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate barcode: %v", err)
+	}
 
+	// Scale barcode
+	qrCode, err = barcode.Scale(qrCode, 650, 250)
+	if err != nil {
+		return "", fmt.Errorf("failed to scale barcode: %v", err)
+	}
+
+	// Convert to 8-bit RGBA
+	rgbaImage := image.NewRGBA(qrCode.Bounds())
+	draw.Draw(rgbaImage, qrCode.Bounds(), qrCode, image.Point{}, draw.Src)
+
+	// Save as PNG
 	barcodeFile := "barcode_" + product.ProdukId + ".png"
-	file, _ := os.Create(barcodeFile)
+	file, err := os.Create(barcodeFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to create file: %v", err)
+	}
 	defer file.Close()
 
-	png.Encode(file, qrCode)
+	// Encode barcode as 8-bit PNG
+	err = png.Encode(file, rgbaImage)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode PNG: %v", err)
+	}
 
 	return barcodeFile, nil
 }
@@ -255,51 +313,81 @@ func (s *productService) GenerateAllProductsPDF(page int) (string, error) {
 		return "", err
 	}
 
+	// Membuat PDF dengan layout yang lebih estetik
 	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 20, 15)
 	pdf.AddPage()
-	pdf.SetFont("Arial", "B", 16)
-	pdf.Cell(40, 10, "All Products List")
 
-	pdf.Ln(12)
+	// Header dengan latar belakang berwarna
+	pdf.SetFillColor(100, 150, 255) // Warna biru muda
+	pdf.SetTextColor(255, 255, 255) // Warna putih
+	pdf.SetFont("Arial", "B", 20)
+	pdf.CellFormat(0, 12, "All Products List", "0", 1, "C", true, 0, "")
+	pdf.Ln(10)
+
+	// Reset warna teks ke hitam
+	pdf.SetTextColor(0, 0, 0)
 	pdf.SetFont("Arial", "", 12)
 
+	// Menambahkan informasi produk
 	for _, product := range products {
 		// Konversi SellPrice, MakePrice, dan Pajak dari string ke float64
 		sellPrice, err := strconv.ParseFloat(product.Sellprice, 64)
 		if err != nil {
-			return "", errors.New("invalid sell price for product: " + product.Productname)
+			return "", fmt.Errorf("invalid sell price for product: %s", product.Productname)
 		}
 
 		makePrice, err := strconv.ParseFloat(product.Makeprice, 64)
 		if err != nil {
-			return "", errors.New("invalid make price for product: " + product.Productname)
+			return "", fmt.Errorf("invalid make price for product: %s", product.Productname)
 		}
 
 		pajak, err := strconv.ParseFloat(product.Pajak, 64)
 		if err != nil {
-			return "", errors.New("invalid tax for product: " + product.Productname)
+			return "", fmt.Errorf("invalid tax for product: %s", product.Productname)
 		}
 
-		// Menambahkan informasi produk ke PDF
-		pdf.Cell(40, 10, "Product ID: "+product.ProdukId)
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "Product Name: "+product.Productname)
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "Category: "+product.Productcategory)
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "Sell Price: "+fmt.Sprintf("%.2f", sellPrice))
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "Make Price: "+fmt.Sprintf("%.2f", makePrice))
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "Tax: "+fmt.Sprintf("%.2f", pajak))
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "Description: "+product.Description)
-		pdf.Ln(10)
-		pdf.Cell(40, 10, "-------------------------------------")
+		// Label dan Nilai untuk setiap field
+		labels := []string{"Product ID:", "Product Name:", "Category:", "Sell Price:", "Make Price:", "Tax:", "Description:"}
+		values := []string{
+			product.ProdukId,
+			product.Productname,
+			product.Productcategory,
+			fmt.Sprintf("%.2f", sellPrice),
+			fmt.Sprintf("%.2f", makePrice),
+			fmt.Sprintf("%.2f%%", pajak),
+			product.Description,
+		}
+
+		for i := 0; i < len(labels); i++ {
+			pdf.SetFont("Arial", "B", 12)
+			pdf.Cell(40, 8, labels[i])
+			pdf.SetFont("Arial", "", 12)
+			pdf.MultiCell(0, 8, values[i], "", "", false)
+		}
+
+		// Generate barcode untuk produk ini
+		barcodeFile, err := s.GenerateBarcode(product.ProdukId)
+		if err != nil {
+			return "", fmt.Errorf("failed to generate barcode for product: %s", product.Productname)
+		}
+
+		// Menambahkan barcode ke PDF
+		pdf.Ln(5)
+		pdf.SetFont("Arial", "B", 12)
+		pdf.Cell(0, 10, "Barcode:")
+		pdf.Ln(12)
+		pdf.Image(barcodeFile, 15, pdf.GetY(), 60, 20, false, "", 0, "")
+		pdf.Ln(25)
+
+		// Garis pemisah antar produk
+		pdf.SetDrawColor(200, 200, 200)
+		pdf.Line(15, pdf.GetY(), 195, pdf.GetY())
 		pdf.Ln(10)
 	}
 
-	fileName := "all_products_page_" + fmt.Sprintf("%d", page) + ".pdf"
+	// Nama file berdasarkan halaman
+	fileName := fmt.Sprintf("all_products_page_%d.pdf", page)
 	err = pdf.OutputFileAndClose(fileName)
 	if err != nil {
 		return "", err

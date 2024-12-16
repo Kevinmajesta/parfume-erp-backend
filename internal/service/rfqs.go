@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
 	"github.com/Kevinmajesta/parfume-erp-backend/pkg/email"
+	"github.com/jung-kurt/gofpdf"
 )
 
 type RfqService interface {
@@ -23,6 +25,7 @@ type RfqService interface {
 	GetEmailByVendorId(vendorId string) (string, error)
 	SendRfqEmail(rfqId string, recipientEmail string) error
 	DeleteRFQ(MoId string) (bool, error)
+	CreateRfqPDF(rfqId string, recipientEmail string) ([]byte, error)
 }
 
 type rfqService struct {
@@ -222,8 +225,6 @@ func (s *rfqService) UpdateRfqStatus(rfqId string) (*entity.Rfqs, error) {
 	case "Purchase Order":
 		mo.Status = "Recived"
 	case "Recived":
-		mo.Status = "Billed"
-	case "Billed":
 		mo.Status = "Done"
 	default:
 		return nil, errors.New("invalid status transition")
@@ -348,4 +349,109 @@ func (s *rfqService) DeleteRFQ(MoId string) (bool, error) {
 	}
 
 	return s.rfqRepository.DeleteRfq(material)
+}
+
+func (s *rfqService) CreateRfqPDF(rfqId string, recipientEmail string) ([]byte, error) {
+	// Cari RFQ berdasarkan ID
+	rfq, err := s.FindRfqById(rfqId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find RFQ with id %s: %v", rfqId, err)
+	}
+
+	// Pastikan data produk tersedia
+	if len(rfq.Products) == 0 {
+		return nil, errors.New("no products associated with this RFQ")
+	}
+
+	// Create a new PDF document
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 20, 15)
+	pdf.AddPage()
+
+	// Set Header
+	pdf.SetFillColor(0, 102, 204)   // Header color
+	pdf.SetTextColor(255, 255, 255) // White text
+	pdf.SetFont("Arial", "B", 20)
+	pdf.CellFormat(0, 15, "RFQ Confirmation | RFQ ID: "+rfqId, "0", 1, "C", true, 0, "")
+	pdf.Ln(10)
+
+	// Add a horizontal line after the header
+	pdf.SetDrawColor(0, 102, 204)
+	pdf.Line(15, pdf.GetY(), 195, pdf.GetY())
+	pdf.Ln(10)
+
+	// Reset font and text color for the body
+	pdf.SetTextColor(0, 0, 0)
+	pdf.SetFont("Arial", "", 12)
+
+	// Greeting message
+	pdf.Cell(0, 10, fmt.Sprintf("Dear Vendor,"))
+	pdf.Ln(6)
+	pdf.Cell(0, 10, "Here are the details of your RFQ:")
+	pdf.Ln(10)
+
+	// RFQ Table
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "RFQ ID:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, rfq.RfqId)
+	pdf.Ln(6)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Vendor ID:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, rfq.VendorId)
+	pdf.Ln(6)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Order Date:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, rfq.OrderDate)
+	pdf.Ln(6)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Status:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 10, rfq.Status)
+	pdf.Ln(10)
+
+	// Products Table
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 10, "Products:")
+	pdf.Ln(6)
+
+	// Table Header
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(50, 10, "Product Name")
+	pdf.Cell(30, 10, "Quantity")
+	pdf.Cell(40, 10, "Unit Price")
+	pdf.Cell(40, 10, "Subtotal")
+	pdf.Ln(6)
+
+	// Table Body (Products)
+	pdf.SetFont("Arial", "", 12)
+	for _, product := range rfq.Products {
+		pdf.Cell(50, 10, product.ProductName)
+		pdf.Cell(30, 10, fmt.Sprintf("%s", product.Quantity))
+		pdf.Cell(40, 10, fmt.Sprintf("%s", product.UnitPrice))
+		pdf.Cell(40, 10, fmt.Sprintf("%s", product.Subtotal))
+		pdf.Ln(6)
+	}
+
+	// Footer
+	pdf.SetY(-30)
+	pdf.SetFont("Arial", "I", 10)
+	pdf.Cell(0, 10, "Thank you for doing business with us!")
+	pdf.Ln(6)
+	pdf.CellFormat(0, 10, "Best regards, Depublic Team", "", 0, "C", false, 0, "")
+
+	// Save the PDF to a buffer
+	var buf bytes.Buffer
+	err = pdf.Output(&buf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the PDF as a byte slice
+	return buf.Bytes(), nil
 }

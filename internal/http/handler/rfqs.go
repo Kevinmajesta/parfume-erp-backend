@@ -272,3 +272,28 @@ func (h *RfqHandler) DeleteRfq(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "sukses delete RFQ", isDeleted))
 }
+
+func (h *RfqHandler) HandleCreateRfqPDF(c echo.Context) error {
+	// Get the RFQ ID from the URL parameters
+	rfqId := c.Param("id_rfq")
+
+	// Call the service method to create the PDF
+	pdfBytes, err := h.rfqService.CreateRfqPDF(rfqId, "")
+	if err != nil {
+		// If an error occurs while generating the PDF, return error response
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	// Set the appropriate headers for PDF download
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=rfq-"+rfqId+".pdf")
+	c.Response().Header().Set("Content-Length", string(len(pdfBytes)))
+
+	// Write the PDF content to the response
+	if _, err := c.Response().Write(pdfBytes); err != nil {
+		// Return error if there is an issue writing the PDF content
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return nil
+}

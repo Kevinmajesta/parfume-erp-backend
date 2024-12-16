@@ -70,7 +70,7 @@ func (s *quoService) CreateQuo(rfq *entity.Quotations) (*entity.Quotations, erro
 		return nil, err
 	}
 
-	newRfq := entity.NewQuo(lastId, rfq.OrderDate, rfq.Status, rfq.CostumerId)
+	newRfq := entity.NewQuo(lastId, rfq.OrderDate, rfq.Status, rfq.CostumerId, rfq.Payment)
 
 	savedRfq, err := s.quoRepository.CreateQuo(newRfq)
 	if err != nil {
@@ -129,6 +129,7 @@ func (s *quoService) UpdateQuo(rfq *entity.Quotations) (*entity.Quotations, erro
 		rfq.OrderDate,
 		rfq.Status,
 		rfq.CostumerId,
+		rfq.Payment,
 		existingRfq.Status,
 	)
 
@@ -259,6 +260,9 @@ func (s *quoService) CalculateOverview(rfqId string) (map[string]interface{}, er
 	if err != nil {
 		return nil, err
 	}
+	if rfq == nil {
+		return nil, fmt.Errorf("RFQ not found")
+	}
 
 	overview := make(map[string]interface{})
 	overview["id_quotation"] = rfq.QuotationsId
@@ -347,3 +351,5 @@ func (s *quoService) GetEmailByCostumerId(vendorId string) (string, error) {
 	}
 	return email, nil
 }
+
+

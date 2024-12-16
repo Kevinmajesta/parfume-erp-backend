@@ -116,3 +116,35 @@ func (h *CostumerHandler) GetCostumerProfile(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays costumer data", material))
 }
+
+// func (h *CostumerHandler) HandleCreateCostumerPDF(c echo.Context) error {
+// 	// Get the Costumer ID from the URL parameters
+// 	costumerId := c.Param("id_costumer")
+
+// 	// Call the service method to get the costumer details
+// 	costumer, err := h.costumerService.FindCostumerBy(costumerId) // This should return *entity.Costumers, not bool
+// 	if err != nil {
+// 		// If an error occurs while fetching the costumer, return error response
+// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+// 	}
+
+// 	// Call the service method to create the PDF for the given costumer
+// 	pdfBytes, err := h.costumerService.CreateCostumerPDF(costumer)
+// 	if err != nil {
+// 		// If an error occurs while generating the PDF, return error response
+// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+// 	}
+
+// 	// Set the appropriate headers for PDF download
+// 	c.Response().Header().Set("Content-Type", "application/pdf")
+// 	c.Response().Header().Set("Content-Disposition", "attachment; filename=costumer-"+costumerId+".pdf")
+// 	c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", len(pdfBytes))) // Fix Content-Length header
+
+// 	// Write the PDF content to the response
+// 	if _, err := c.Response().Write(pdfBytes); err != nil {
+// 		// Return error if there is an issue writing the PDF content
+// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+// 	}
+
+// 	return nil
+// }
