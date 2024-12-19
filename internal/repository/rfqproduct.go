@@ -13,6 +13,7 @@ type RfqProductRepository interface {
 	UpdateProduct(product *entity.RfqsProduct) (*entity.RfqsProduct, error)
 	GetProductByRfqIdAndProductId(rfqId, productId string) (*entity.RfqsProduct, error)
 	GetProductDetails(materialId string) (*entity.Materials, error)
+	DeleteProductsByRfqId(rfqId string) error
 }
 
 type rfqProductRepository struct {
@@ -67,7 +68,7 @@ func (r *rfqProductRepository) UpdateProduct(product *entity.RfqsProduct) (*enti
 
 func (r *rfqProductRepository) GetProductByRfqIdAndProductId(rfqId, productId string) (*entity.RfqsProduct, error) {
 	var product entity.RfqsProduct
-	if err := r.db.Where("id_rfq = ? AND id_material = ?", rfqId, productId).First(&product).Error; err != nil {
+	if err := r.db.Where("id_rfq = ? AND id_product = ?", rfqId, productId).First(&product).Error; err != nil {
 		// Jika tidak ditemukan, kembalikan nil dan error yang sesuai
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -83,4 +84,12 @@ func (r *rfqProductRepository) GetProductDetails(materialId string) (*entity.Mat
 		return nil, err
 	}
 	return &product, nil
+}
+
+func (s *rfqProductRepository) DeleteProductsByRfqId(rfqId string) error {
+	result := s.db.Unscoped().Where("id_rfq = ?", rfqId).Delete(&entity.RfqsProduct{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

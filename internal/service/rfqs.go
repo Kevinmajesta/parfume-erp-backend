@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/entity"
 	"github.com/Kevinmajesta/parfume-erp-backend/internal/repository"
@@ -26,6 +27,8 @@ type RfqService interface {
 	SendRfqEmail(rfqId string, recipientEmail string) error
 	DeleteRFQ(MoId string) (bool, error)
 	CreateRfqPDF(rfqId string, recipientEmail string) ([]byte, error)
+	UpdateRfqAll(rfqId string, updatedRfq *entity.Rfqs) (*entity.Rfqs, error)
+	DeleteProductsByRfqId(rfqId string) error
 }
 
 type rfqService struct {
@@ -115,76 +118,58 @@ func (s *rfqService) GetCheckIDMaterial(materialId string) (bool, error) {
 	return s.rfqProductRepo.CheckMaterialExists(materialId)
 }
 
-func (s *rfqService) UpdateRfq(rfq *entity.Rfqs) (*entity.Rfqs, error) {
-	// Ambil data RFQ lama
-	existingRfq, err := s.rfqRepository.GetRfqById(rfq.RfqId)
+func (s *rfqService) UpdateRfq(updatedRfq *entity.Rfqs) (*entity.Rfqs, error) {
+	// Perbarui informasi RFQ
+	existingRfq, err := s.rfqRepository.GetRfqById(updatedRfq.RfqId)
 	if err != nil {
 		return nil, err
 	}
-
 	if existingRfq == nil {
-		return nil, fmt.Errorf("RFQ with id %s not found", rfq.RfqId)
+		return nil, fmt.Errorf("RFQ with id %s not found", updatedRfq.RfqId)
 	}
 
-	// Update hanya data RFQ tanpa menyentuh produk
-	updatedRfq := entity.UpdateRfqs(
-		rfq.RfqId,
-		rfq.OrderDate,
-		rfq.Status,
-		rfq.VendorId,
-		existingRfq.Status,
-	)
+	// Update detail RFQ
+	existingRfq.OrderDate = updatedRfq.OrderDate
+	existingRfq.Status = updatedRfq.Status
+	existingRfq.VendorId = updatedRfq.VendorId
+	existingRfq.UpdatedAt = time.Now()
 
-	// Perbarui data RFQ
-	result, err := s.rfqRepository.UpdateRfq(updatedRfq)
+	// Simpan perubahan RFQ
+	updatedRfqResult, err := s.rfqRepository.UpdateRfq(existingRfq)
 	if err != nil {
 		return nil, err
 	}
 
-	// Update produk yang sudah ada
-	// Update produk yang sudah ada
-	// Update produk yang sudah ada
-	for _, product := range rfq.Products {
-		// Periksa apakah produk sudah ada berdasarkan RfqId dan ProductId
-		existingProduct, err := s.rfqProductRepo.GetProductByRfqIdAndProductId(rfq.RfqId, product.ProductId)
+	// Hapus produk lama
+	err = s.rfqProductRepo.DeleteProductsByRfqId(updatedRfq.RfqId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tambahkan produk baru
+	for _, product := range updatedRfq.Products {
+		lastProductId, err := s.rfqProductRepo.GetLastProductId()
 		if err != nil {
 			return nil, err
 		}
 
-		if existingProduct != nil {
-			// Jika produk sudah ada, lakukan pembaruan
-			product.RfqsProductId = existingProduct.RfqsProductId
-			product.RfqId = rfq.RfqId
+		product.RfqsProductId = generateRfqsProductId(lastProductId)
+		product.RfqId = updatedRfq.RfqId
 
-			_, err = s.rfqProductRepo.UpdateProduct(&product)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			// Jika produk belum ada, buat produk baru
-			lastProductId, err := s.rfqProductRepo.GetLastProductId()
-			if err != nil {
-				return nil, err
-			}
-
-			product.RfqsProductId = generateRfqsProductId(lastProductId)
-			product.RfqId = rfq.RfqId
-
-			_, err = s.rfqProductRepo.CreateProduct(&product)
-			if err != nil {
-				return nil, err
-			}
+		_, err = s.rfqProductRepo.CreateProduct(&product)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	// Ambil produk yang diperbarui
-	updatedProducts, err := s.rfqProductRepo.GetProductsByRfqId(rfq.RfqId)
+	// Ambil produk terbaru untuk RFQ
+	products, err := s.rfqProductRepo.GetProductsByRfqId(updatedRfq.RfqId)
 	if err != nil {
 		return nil, err
 	}
-	result.Products = updatedProducts
+	updatedRfqResult.Products = products
 
-	return result, nil
+	return updatedRfqResult, nil
 }
 
 func (s *rfqService) FindRfqById(rfqId string) (*entity.Rfqs, error) {
@@ -454,4 +439,64 @@ func (s *rfqService) CreateRfqPDF(rfqId string, recipientEmail string) ([]byte, 
 
 	// Return the PDF as a byte slice
 	return buf.Bytes(), nil
+}
+
+func (s *rfqService) UpdateRfqAll(rfqId string, updatedRfq *entity.Rfqs) (*entity.Rfqs, error) {
+	// Periksa apakah RFQ ada
+	existingRfq, err := s.rfqRepository.GetRfqById(rfqId)
+	if err != nil {
+		return nil, err
+	}
+	if existingRfq == nil {
+		return nil, fmt.Errorf("RFQ with id %s not found", rfqId)
+	}
+
+	// Update informasi RFQ
+	existingRfq.OrderDate = updatedRfq.OrderDate
+	existingRfq.Status = updatedRfq.Status
+	existingRfq.VendorId = updatedRfq.VendorId
+	existingRfq.UpdatedAt = time.Now()
+
+	// Simpan perubahan RFQ
+	savedRfq, err := s.rfqRepository.UpdateRfq(existingRfq)
+	if err != nil {
+		return nil, err
+	}
+
+	// Hapus produk lama jika ada produk baru yang diberikan
+	if len(updatedRfq.Products) > 0 {
+		err = s.rfqProductRepo.DeleteProductsByRfqId(rfqId)
+		if err != nil {
+			return nil, err
+		}
+
+		// Tambahkan produk baru
+		for _, product := range updatedRfq.Products {
+			lastProductId, err := s.rfqProductRepo.GetLastProductId()
+			if err != nil {
+				return nil, err
+			}
+
+			product.RfqsProductId = generateRfqsProductId(lastProductId)
+			product.RfqId = rfqId
+
+			_, err = s.rfqProductRepo.CreateProduct(&product)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	// Ambil produk terbaru untuk RFQ
+	products, err := s.rfqProductRepo.GetProductsByRfqId(rfqId)
+	if err != nil {
+		return nil, err
+	}
+	savedRfq.Products = products
+
+	return savedRfq, nil
+}
+
+func (s *rfqService) DeleteProductsByRfqId(rfqId string) error {
+	return s.rfqProductRepo.DeleteProductsByRfqId(rfqId)
 }

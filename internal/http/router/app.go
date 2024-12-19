@@ -180,6 +180,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Roles:   allRoles,
 		},
 		{
+			Method:  http.MethodPost,
+			Path:    "/product/decrease",
+			Handler: productHandler.DecreaseProductQty,
+			Roles:   allRoles,
+		},
+		{
 			Method:  http.MethodGet,
 			Path:    "/product/:id_product/barcode",
 			Handler: productHandler.GenerateBarcodePDFHandler,
@@ -355,7 +361,7 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: vendorHandler.FindAllVendor,
 			Roles:   allRoles,
 		},
-		 {
+		{
 			Method:  http.MethodGet,
 			Path:    "/vendor/:id_vendor",
 			Handler: vendorHandler.GetVendorProfile,
@@ -378,6 +384,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodPut,
 			Path:    "/rfq",
 			Handler: rfqHandler.UpdateRfq,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/rfq/:id_rfq",
+			Handler: rfqHandler.UpdateRfqAll,
 			Roles:   allRoles,
 		},
 		{

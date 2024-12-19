@@ -177,5 +177,6 @@ func (r *productRepository) SearchByName(name string) ([]entity.Products, error)
 }
 
 func (r *productRepository) Update(product *entity.Products) error {
+	r.cacheable.Delete("FindAllProducts_page_1")
 	return r.db.Save(product).Error
 }

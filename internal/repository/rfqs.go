@@ -23,6 +23,7 @@ type RfqRepository interface {
 	GetVendorDetails(vendorId string) (*entity.Vendors, error)
 	CheckEmailExistsByVendorId(vendorId string) (string, error)
 	DeleteRfq(mo *entity.Rfqs) (bool, error)
+	UpdateRfqAll(rfq *entity.Rfqs) (*entity.Rfqs, error)
 }
 
 type rfqRepository struct {
@@ -203,4 +204,13 @@ func (r *rfqRepository) DeleteRfq(mo *entity.Rfqs) (bool, error) {
 	r.cacheable.Delete("FindAllRfqBill_page_1")
 	r.cacheable.Delete("FindAllRfq_page_1")
 	return true, nil
+}
+
+func (r *rfqRepository) UpdateRfqAll(rfq *entity.Rfqs) (*entity.Rfqs, error) {
+	if err := r.db.Save(&rfq).Error; err != nil {
+		return nil, err
+	}
+	r.cacheable.Delete("FindAllRfq_page_1")
+	r.cacheable.Delete("FindAllRfqBill_page_1")
+	return rfq, nil
 }

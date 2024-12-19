@@ -138,7 +138,7 @@ func (h *RfqHandler) UpdateRfq(c echo.Context) error {
 			UnitPrice:   product.UnitPrice,
 			Tax:         product.Tax,
 			Subtotal:    product.Subtotal,
-			VendorId:    product.VendorId,
+			VendorId:    input.VendorId,
 		})
 	}
 	updatedRfq.Products = products
@@ -296,4 +296,66 @@ func (h *RfqHandler) HandleCreateRfqPDF(c echo.Context) error {
 	}
 
 	return nil
+}
+
+func (h *RfqHandler) UpdateRfqAll(c echo.Context) error {
+	rfqId := c.Param("id_rfq")
+
+	var input binder.RFQUpdateRequest
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponseBom(http.StatusBadRequest, "Invalid input"))
+	}
+
+	// Periksa apakah vendor ID valid
+	exists, err := h.rfqService.GetCheckIDProduct(input.VendorId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
+	}
+	if !exists {
+		return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("Vendor with id %s does not exist", input.VendorId)))
+	}
+
+	// Validasi material untuk setiap produk baru
+	for _, product := range input.Products {
+		materialCheck, err := h.rfqService.GetCheckIDMaterial(product.ProductId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, err.Error()))
+		}
+		if !materialCheck {
+			return c.JSON(http.StatusNotFound, response.ErrorResponseBom(http.StatusNotFound, fmt.Sprintf("Product with id %s does not exist", product.ProductId)))
+		}
+	}
+
+	// Update RFQ
+	updatedRfq := entity.NewRfqs(rfqId, input.OrderDate, input.Status, input.VendorId)
+
+	// Proses produk baru
+	var products []entity.RfqsProduct
+	for _, product := range input.Products {
+		products = append(products, entity.RfqsProduct{
+			ProductId:   product.ProductId,
+			ProductName: product.ProductName,
+			Quantity:    product.Quantity,
+			UnitPrice:   product.UnitPrice,
+			Tax:         product.Tax,
+			Subtotal:    product.Subtotal,
+			VendorId:    input.VendorId, // Tambahkan VendorId
+		})
+	}
+	updatedRfq.Products = products
+	updatedRfq.UpdatedAt = time.Now()
+
+	// Simpan perubahan RFQ ke database
+	savedRfq, err := h.rfqService.UpdateRfqAll(rfqId, updatedRfq)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponseBom(http.StatusInternalServerError, "Failed to update RFQ"))
+	}
+
+	return c.JSON(http.StatusOK, response.BOMResponse{
+		Meta: response.Meta{
+			Code:    200,
+			Message: "Successfully updated the RFQ",
+		},
+		DataBom: *savedRfq,
+	})
 }

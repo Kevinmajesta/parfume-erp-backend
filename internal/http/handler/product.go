@@ -251,3 +251,28 @@ func (h *ProductHandler) IncreaseProductQty(c echo.Context) error {
 	// Return the updated product
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Successfully increased product quantity", updatedProduct))
 }
+
+func (h *ProductHandler) DecreaseProductQty(c echo.Context) error {
+	var input binder.IncreaseQtyInput
+	// Bind input
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to bind input"))
+	}
+
+	// Validate input
+	if err := c.Validate(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Validation Error: "+err.Error()))
+	}
+
+	// Call service to increase product quantity
+	updatedProduct, err := h.productService.DecreaseProductQty(entity.Products{
+		ProdukId: input.ProductId,
+		Qty:      input.Qty,
+	})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse(http.StatusInternalServerError, err.Error()))
+	}
+
+	// Return the updated product
+	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Successfully decrease product quantity", updatedProduct))
+}

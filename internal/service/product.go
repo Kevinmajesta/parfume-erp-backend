@@ -32,6 +32,7 @@ type ProductService interface {
 	FindAllProductVariant(page int) ([]entity.Products, error)
 	GetProductByID(productId string) (*entity.Products, error)
 	IncreaseProductQty(input entity.Products) (*entity.Products, error)
+	DecreaseProductQty(input entity.Products) (*entity.Products, error)
 }
 
 type productService struct {
@@ -419,6 +420,24 @@ func (s *productService) IncreaseProductQty(input entity.Products) (*entity.Prod
 	if product.Qty < 0 {
 		return nil, errors.New("resulting quantity cannot be negative")
 	}
+
+	// Update product in the database
+	if err := s.productRepository.Update(product); err != nil {
+		return nil, errors.New("failed to update product quantity")
+	}
+
+	return product, nil
+}
+
+func (s *productService) DecreaseProductQty(input entity.Products) (*entity.Products, error) {
+	// Fetch product by ID
+	product, err := s.productRepository.FindProductByID(input.ProdukId)
+	if err != nil {
+		return nil, errors.New("product not found")
+	}
+
+	// Increase the quantity
+	product.Qty -= input.Qty // Ensure Qty is float64 in Product struct
 
 	// Update product in the database
 	if err := s.productRepository.Update(product); err != nil {

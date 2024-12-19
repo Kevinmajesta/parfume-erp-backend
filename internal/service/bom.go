@@ -244,29 +244,25 @@ func (s *bomService) GenerateBOMPDF(overview map[string]interface{}) ([]byte, er
 	pdf.SetMargins(15, 20, 15)
 	pdf.AddPage()
 
-	// Set a simple header
+	// Set the font for the title
 	pdf.SetFont("Arial", "B", 16)
 	pdf.CellFormat(0, 12, "BOM Overview", "0", 1, "C", false, 0, "")
 	pdf.Ln(10)
 
-	// Reset text color and font
-	pdf.SetTextColor(0, 0, 0)
+	// BOM Details
 	pdf.SetFont("Arial", "", 12)
-
-	// Add BOM ID and product name
-	pdf.SetFont("Arial", "B", 12)
 	pdf.Cell(40, 10, "BOM ID:")
-	pdf.SetFont("Arial", "", 12)
+	pdf.SetFont("Arial", "I", 12)
 	pdf.Cell(0, 10, overview["bom_id"].(string))
 	pdf.Ln(8)
 
-	pdf.SetFont("Arial", "B", 12)
-	pdf.Cell(40, 10, "Product Name:")
 	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(40, 10, "Product Name:")
+	pdf.SetFont("Arial", "I", 12)
 	pdf.Cell(0, 10, overview["product_name"].(string))
 	pdf.Ln(12)
 
-	// Add product details section
+	// Product Details
 	productDetails := overview["product_details"].(map[string]interface{})
 	pdf.SetFont("Arial", "B", 12)
 	pdf.Cell(40, 10, "Make Price:")
@@ -280,7 +276,7 @@ func (s *bomService) GenerateBOMPDF(overview map[string]interface{}) ([]byte, er
 	pdf.Cell(0, 10, productDetails["sell_price"].(string))
 	pdf.Ln(12)
 
-	// Materials Table Header with subtle styling
+	// Materials Table Header
 	pdf.SetFont("Arial", "B", 12)
 	pdf.Cell(70, 10, "Material")
 	pdf.Cell(30, 10, "Quantity")
@@ -288,10 +284,10 @@ func (s *bomService) GenerateBOMPDF(overview map[string]interface{}) ([]byte, er
 	pdf.Cell(50, 10, "BOM Cost")
 	pdf.Ln(10)
 
-	// Materials Table Rows with basic formatting
-	pdf.SetFont("Arial", "", 12)
+	// Materials Table Rows
 	materials := overview["materials"].([]map[string]interface{})
 	for _, material := range materials {
+		pdf.SetFont("Arial", "", 12)
 		pdf.Cell(70, 10, material["material"].(string))
 		pdf.Cell(30, 10, material["quantity"].(string))
 		pdf.Cell(50, 10, material["product_cost"].(string))
@@ -299,7 +295,7 @@ func (s *bomService) GenerateBOMPDF(overview map[string]interface{}) ([]byte, er
 		pdf.Ln(10)
 	}
 
-	// Add a line separator after materials
+	// Add a line separator
 	pdf.Ln(5)
 	pdf.Cell(0, 1, "")
 	pdf.Ln(10)
