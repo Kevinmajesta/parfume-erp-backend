@@ -157,3 +157,34 @@ func (h *VendorHandler) DownloadVendorPDF(c echo.Context) error {
 
 	return nil
 }
+
+func (h *VendorHandler) DownloadAllVendorsPDF(c echo.Context) error {
+	// Fetch all vendors from the service
+	vendors, err := h.vendorService.FindAllVendor(1)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error fetching vendor list",
+		})
+	}
+
+	// Convert vendors to []*entity.Vendors
+	vendorPtrs := make([]*entity.Vendors, len(vendors))
+	for i := range vendors {
+		vendorPtrs[i] = &vendors[i]
+	}
+
+	// Generate the PDF for all vendors
+	pdfData, err := h.vendorService.CreateAllVendorsPDF(vendorPtrs)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error generating PDF",
+		})
+	}
+
+	// Serve the PDF to the client
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=all_vendors.pdf")
+	c.Response().Write(pdfData)
+
+	return nil
+}

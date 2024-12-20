@@ -273,3 +273,28 @@ func (h *QuoHandler) GetCostumerEmailById(c echo.Context) error {
 	// Jika berhasil mengirimkan email, kirimkan response sukses
 	return c.JSON(http.StatusOK, map[string]string{"message": "Quo email successfully sent"})
 }
+
+func (h *QuoHandler) HandleCreateQuoPDF(c echo.Context) error {
+	// Get the Quotation ID from the URL parameters
+	quoId := c.Param("id_quotation")
+
+	// Call the service method to create the PDF
+	pdfBytes, err := h.quoService.CreateQuoPDF(quoId, "")
+	if err != nil {
+		// If an error occurs while generating the PDF, return error response
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	// Set the appropriate headers for PDF download
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=quo-"+quoId+".pdf")
+	c.Response().Header().Set("Content-Length", strconv.Itoa(len(pdfBytes)))
+
+	// Write the PDF content to the response
+	if _, err := c.Response().Write(pdfBytes); err != nil {
+		// Return error if there is an issue writing the PDF content
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return nil
+}

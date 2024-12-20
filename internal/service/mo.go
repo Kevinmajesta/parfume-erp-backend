@@ -149,4 +149,3 @@ func (s *moService) GenerateMOPDF(mo *entity.Mos) ([]byte, error) {
 	// Return the PDF as a byte slice
 	return buf.Bytes(), nil
 }
-

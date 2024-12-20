@@ -18,6 +18,7 @@ type VendorService interface {
 	FindVendorBy(materialId string) (*entity.Vendors, error)
 	FindAllVendor(page int) ([]entity.Vendors, error)
 	CreateVendorPDF(vendor *entity.Vendors) ([]byte, error)
+	CreateAllVendorsPDF(vendors []*entity.Vendors) ([]byte, error)
 }
 
 type vendorService struct {
@@ -132,7 +133,7 @@ func (s *vendorService) CreateVendorPDF(vendor *entity.Vendors) ([]byte, error) 
 	pdf.AddPage()
 
 	// Set Header
-	pdf.SetFillColor(0, 102, 204) // Light blue color for the header
+	pdf.SetFillColor(0, 102, 204)   // Light blue color for the header
 	pdf.SetTextColor(255, 255, 255) // White text for the header
 	pdf.SetFont("Arial", "B", 20)
 	pdf.CellFormat(0, 15, "Vendor Information", "0", 1, "C", true, 0, "")
@@ -179,11 +180,81 @@ func (s *vendorService) CreateVendorPDF(vendor *entity.Vendors) ([]byte, error) 
 		pdf.Ln(4)
 	}
 
-	// Add a footer (with company details and alignment)
-	pdf.SetY(-30) // Position the footer at the bottom
-	pdf.SetFont("Arial", "I", 10)
-	pdf.SetTextColor(0, 102, 204) // Footer color
-	pdf.Cell(0, 10, "Konate Parfume")
+	// Save the PDF to a buffer
+	var buf bytes.Buffer
+	err := pdf.Output(&buf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the PDF as a byte slice
+	return buf.Bytes(), nil
+}
+
+// Main function for creating vendor PDF
+func (s *vendorService) CreateAllVendorsPDF(vendors []*entity.Vendors) ([]byte, error) {
+	// Cek apakah daftar vendor kosong
+	if len(vendors) == 0 {
+		return nil, errors.New("No vendors available")
+	}
+
+	// Create a new PDF document
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 20, 15)
+
+	// Loop through each vendor and add them to the PDF
+	for _, vendor := range vendors {
+		pdf.AddPage()
+
+		// Set Header for each vendor page
+		pdf.SetFillColor(0, 102, 204)   // Light blue color for the header
+		pdf.SetTextColor(255, 255, 255) // White text for the header
+		pdf.SetFont("Arial", "B", 20)
+		pdf.CellFormat(0, 15, "Vendor Information", "0", 1, "C", true, 0, "")
+		pdf.Ln(10)
+
+		// Add a horizontal line after the header
+		pdf.SetDrawColor(0, 102, 204)
+		pdf.Line(15, pdf.GetY(), 195, pdf.GetY())
+		pdf.Ln(10)
+
+		// Reset font and text color for the body
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("Arial", "", 12)
+
+		// Section Title - Vendor Details
+		pdf.SetFont("Arial", "B", 14)
+		pdf.Cell(0, 10, "Vendor Details")
+		pdf.Ln(6) // Line break after title
+
+		// Create a table of details (Labels + Values)
+		labels := []string{
+			"Vendor ID:", "Vendor Name:", "Address Line 1:", "Address Line 2:",
+			"Phone:", "Email:", "Website:", "Status:", "Zip:", "City:", "Country:", "State:"}
+
+		values := []string{
+			vendor.VendorId, vendor.Vendorname, vendor.Addressone, vendor.Addresstwo,
+			vendor.Phone, vendor.Email, vendor.Website, vendor.Status,
+			vendor.Zip, vendor.City, vendor.Country, vendor.State}
+
+		// Adjust for label and value column widths
+		labelWidth := 45.0
+		valueWidth := 140.0
+
+		for i := 0; i < len(labels); i++ {
+			// Label in bold font
+			pdf.SetFont("Arial", "B", 12)
+			pdf.Cell(labelWidth, 10, labels[i])
+
+			// Value in normal font, wrapping the text if too long
+			pdf.SetFont("Arial", "", 12)
+			pdf.MultiCell(valueWidth, 10, values[i], "", "", false)
+
+			// Add a line break after each entry
+			pdf.Ln(4)
+		}
+
+	}
 
 	// Save the PDF to a buffer
 	var buf bytes.Buffer

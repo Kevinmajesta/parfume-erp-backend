@@ -13,6 +13,7 @@ type QuoProductRepository interface {
 	CheckMaterialExists(materialId string) (bool, error)
 	UpdateProduct(product *entity.QuotationsProduct) (*entity.QuotationsProduct, error)
 	GetProductDetails(materialId string) (*entity.Products, error)
+	DeleteProductsByQuoId(rfqId string) error
 }
 
 type quoProductRepository struct {
@@ -79,4 +80,12 @@ func (r *quoProductRepository) GetProductDetails(materialId string) (*entity.Pro
 		return nil, err
 	}
 	return &product, nil
+}
+
+func (s *quoProductRepository) DeleteProductsByQuoId(rfqId string) error {
+	result := s.db.Unscoped().Where("id_quotation = ?", rfqId).Delete(&entity.QuotationsProduct{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

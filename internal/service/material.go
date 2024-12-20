@@ -347,7 +347,7 @@ func (s *materialService) GenerateAllMaterialsPDF(page int) (string, error) {
 		}
 
 		// Add the barcode image to the PDF
-		pdf.Ln(10)
+		pdf.Ln(3)
 		pdf.SetFont("Arial", "B", 14)
 		pdf.Cell(0, 10, "Material Barcode")
 		pdf.Ln(15)
@@ -356,7 +356,7 @@ func (s *materialService) GenerateAllMaterialsPDF(page int) (string, error) {
 		// Add a separator line after each material
 		pdf.Ln(10)
 		pdf.Cell(0,29, "----------------------------------------")
-		pdf.Ln(10)
+		pdf.Ln(20)
 	}
 
 	// Save the PDF to a file

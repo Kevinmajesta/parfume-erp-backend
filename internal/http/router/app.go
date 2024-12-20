@@ -373,6 +373,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: vendorHandler.DownloadVendorPDF,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/vendor/pdf",
+			Handler: vendorHandler.DownloadAllVendorsPDF,
+			Roles:   allRoles,
+		},
 		//RFQ
 		{
 			Method:  http.MethodPost,
@@ -465,6 +471,18 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Handler: costumerHandler.GetCostumerProfile,
 			Roles:   allRoles,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/costumer/:id_costumer/pdf",
+			Handler: costumerHandler.HandleCreateCostumerPDF,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/costumers/pdf",
+			Handler: costumerHandler.HandleCreateCostumerPDFAll,
+			Roles:   allRoles,
+		},
 		//quo
 		{
 			Method:  http.MethodPost,
@@ -512,6 +530,12 @@ func PrivateRoutes(userHandler handler.UserHandler, suggestionHandler handler.Su
 			Method:  http.MethodGet,
 			Path:    "/quotation/email/:id_costumer",
 			Handler: quoHandler.GetCostumerEmailById,
+			Roles:   allRoles,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/quotation/:id_quotation/pdf",
+			Handler: quoHandler.HandleCreateQuoPDF,
 			Roles:   allRoles,
 		},
 		{

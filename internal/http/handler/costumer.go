@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -117,34 +119,80 @@ func (h *CostumerHandler) GetCostumerProfile(c echo.Context) error {
 	return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "successfully displays costumer data", material))
 }
 
-// func (h *CostumerHandler) HandleCreateCostumerPDF(c echo.Context) error {
-// 	// Get the Costumer ID from the URL parameters
-// 	costumerId := c.Param("id_costumer")
+func (h *CostumerHandler) HandleCreateCostumerPDF(c echo.Context) error {
+	// Get the Costumer ID from the URL parameters
+	costumerId := c.Param("id_costumer")
 
-// 	// Call the service method to get the costumer details
-// 	costumer, err := h.costumerService.FindCostumerBy(costumerId) // This should return *entity.Costumers, not bool
-// 	if err != nil {
-// 		// If an error occurs while fetching the costumer, return error response
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-// 	}
+	// Call the service method to get the costumer details
+	costumer, err := h.costumerService.FindCostumerBy(costumerId) // This should return *entity.Costumers, not bool
+	if err != nil {
+		// If an error occurs while fetching the costumer, return error response
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
 
-// 	// Call the service method to create the PDF for the given costumer
-// 	pdfBytes, err := h.costumerService.CreateCostumerPDF(costumer)
-// 	if err != nil {
-// 		// If an error occurs while generating the PDF, return error response
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-// 	}
+	// Call the service method to create the PDF for the given costumer
+	pdfBytes, err := h.costumerService.CreateCostumerPDF(costumer)
+	if err != nil {
+		// If an error occurs while generating the PDF, return error response
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
 
-// 	// Set the appropriate headers for PDF download
-// 	c.Response().Header().Set("Content-Type", "application/pdf")
-// 	c.Response().Header().Set("Content-Disposition", "attachment; filename=costumer-"+costumerId+".pdf")
-// 	c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", len(pdfBytes))) // Fix Content-Length header
+	// Set the appropriate headers for PDF download
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=costumer-"+costumerId+".pdf")
+	c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", len(pdfBytes))) // Fix Content-Length header
 
-// 	// Write the PDF content to the response
-// 	if _, err := c.Response().Write(pdfBytes); err != nil {
-// 		// Return error if there is an issue writing the PDF content
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-// 	}
+	// Write the PDF content to the response
+	if _, err := c.Response().Write(pdfBytes); err != nil {
+		// Return error if there is an issue writing the PDF content
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
 
-// 	return nil
-// }
+	return nil
+}
+
+func (h *CostumerHandler) HandleCreateCostumerPDFAll(c echo.Context) error {
+	log.Println("Starting HandleCreateCostumerPDFAll")
+
+	// Fetch all vendors from the service
+	vendors, err := h.costumerService.FindAllCostumer(1)
+	if err != nil {
+		log.Println("FindAllCostumer error:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error fetching vendor list",
+		})
+	}
+
+	log.Printf("Fetched %d vendors\n", len(vendors))
+
+	// Convert vendors to []*entity.Costumers
+	vendorPtrs := make([]*entity.Costumers, len(vendors))
+	for i := range vendors {
+		vendorPtrs[i] = &vendors[i]
+	}
+
+	// Generate the PDF for all vendors
+	pdfData, err := h.costumerService.CreateCostumerPDFAll(vendorPtrs)
+	if err != nil {
+		log.Println("CreateCostumerPDFAll error:", err)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error generating PDF",
+		})
+	}
+
+	log.Printf("Generated PDF data of length: %d\n", len(pdfData))
+
+	// Serve the PDF to the client
+	c.Response().Header().Set("Content-Type", "application/pdf")
+	c.Response().Header().Set("Content-Disposition", "attachment; filename=all_costumers.pdf")
+	_, writeErr := c.Response().Write(pdfData)
+	if writeErr != nil {
+		log.Println("Error writing response:", writeErr)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Error writing PDF response",
+		})
+	}
+
+	log.Println("PDF response successfully sent")
+	return nil
+}
